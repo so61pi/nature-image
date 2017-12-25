@@ -1,0 +1,12 @@
+[Unit]
+Description=InitFlash
+RequiresMountsFor=/dev
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/initflash/flash
+Environment="PATH=/usr/sbin:/usr/bin:/sbin:/bin"
+
+[Install]
+WantedBy=multi-user.target

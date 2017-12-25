@@ -1,0 +1,11 @@
+[Unit]
+Description=Setup RunRootfs
+DefaultDependencies=no
+RequiresMountsFor=/run
+Before=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/setup-runrootfs
+Environment="PATH=/usr/sbin:/usr/bin:/sbin:/bin"

@@ -1,0 +1,8 @@
+# The --active flag makes direct.py set legacy_boot (using parted) instead of set correct GUID type for EFI System Partition.
+# Therefore, we use --part-type EF00 (which makes direct.py runs 'sgdisk --typecode= EF00') to set correct GUID.
+part /boot --fixed-size 64M --source multi-bootimg-efi --sourceparams="loader=systemd-boot" --label BOOT --align 1024 --part-type EF00
+
+part --source rootfs --fixed-size 128M --sourceparams="rootfs=true,boot-title=ROOTFS-1" --fstype=squashfs --label ROOTFS1 --align 1024 --use-uuid
+part --source rootfs --fixed-size 128M --sourceparams="rootfs=true,boot-title=ROOTFS-2" --fstype=squashfs --label ROOTFS2 --align 1024 --use-uuid
+
+bootloader --ptable gpt --timeout=1 --append="rootwait rootfstype=squashfs console=ttyS0,115200 console=tty0"

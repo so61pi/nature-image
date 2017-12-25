@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# This script can only be sourced
+# . ./setup cetacean-image
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <image>" >&2
+    return 1
+fi
+
+SETUP_IMAGE="$1"
+SETUP_OECORE="$PWD/meta-oe-core"
+SETUP_COMMON_CONF="$PWD/conf"
+SETUP_IMAGE_CONF="$PWD/meta-image/meta-$SETUP_IMAGE/imgconf"
+SETUP_IMAGE_BUILDDIR="$PWD/build/build-$SETUP_IMAGE"
+
+for d in "$SETUP_OECORE" "$SETUP_COMMON_CONF" "$SETUP_IMAGE_CONF"; do
+    if [ ! -e "$d" ]; then
+        echo "$d not found" >&2
+        return 1
+    fi
+
+    if [ ! -d "$d" ]; then
+        echo "$d not a directory" >&2
+        return 1
+    fi
+done
+
+
+mkdir -p "$SETUP_IMAGE_BUILDDIR/conf"
+
+# Create bblayers.conf
+cat "$SETUP_COMMON_CONF/common.bblayers.conf" "$SETUP_IMAGE_CONF/bblayers.conf" > "$SETUP_IMAGE_BUILDDIR/conf/bblayers.conf"
+
+# Create local.conf
+cat "$SETUP_COMMON_CONF/common.local.conf" "$SETUP_IMAGE_CONF/local.conf" > "$SETUP_IMAGE_BUILDDIR/conf/local.conf"
+
+# Create an empty templateconf.cfg
+touch "$SETUP_IMAGE_BUILDDIR/conf/templateconf.cfg"
+
+ln -sfr --no-dereference "$SETUP_OECORE/bitbake" "$SETUP_OECORE/openembedded-core/bitbake"
+
+. "$SETUP_OECORE/openembedded-core/oe-init-build-env" "$SETUP_IMAGE_BUILDDIR"

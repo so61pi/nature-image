@@ -1,0 +1,25 @@
+#!/bin/sh
+
+if [ $# -ne 1 ]; then
+    echo "Usage: swupdate-net <url>"
+    return 1
+fi
+
+rootfs=$(mount | grep "on / type" | cut -d':' -f 2 | cut -d' ' -f 1)
+if [ "$rootfs" = "/dev/mmcblk1p2" ]; then
+    selection="stable,copy2"
+elif [ "$rootfs" = "/dev/mmcblk1p3" ]; then
+    selection="stable,copy1"
+else
+    echo "Invalid rootfs dev"
+    return 1
+fi
+
+url="$1"
+
+# enable writing to protected mmc private partitions
+# which is where uboot stores its env
+echo 0 > /sys/block/mmcblk1boot1/force_ro
+
+swupdate-progress -w -r &
+swupdate -v -e $selection -d "-u $url"

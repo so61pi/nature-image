@@ -1,0 +1,11 @@
+[Unit]
+Description=SSH Per-Connection Server
+Wants=dropbearkey.service
+After=syslog.target dropbearkey.service
+
+[Service]
+EnvironmentFile=-/etc/default/dropbear
+ExecStart=-/usr/sbin/dropbear -i -r /var/lib/dropbear/dropbear_ecdsa_host_key
+ExecReload=/usr/bin/kill -HUP $MAINPID
+StandardInput=socket
+KillMode=process

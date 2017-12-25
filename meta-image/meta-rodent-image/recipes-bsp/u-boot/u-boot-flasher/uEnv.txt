@@ -1,0 +1,2 @@
+args_mmc=run finduuid; setenv bootargs console=${console} root=PARTUUID=${uuid} ro rootfstype=${mmcrootfstype};
+boot_targets=legacy_mmc0 mmc0 pxe dhcp

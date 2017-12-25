@@ -1,0 +1,8 @@
+.*
+*.out
+
+bin*/
+build*/
+
+CMakeLists.txt.user
+*.py[co]

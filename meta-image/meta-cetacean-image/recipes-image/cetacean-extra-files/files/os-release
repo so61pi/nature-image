@@ -1,0 +1,8 @@
+NAME="Vaquita"
+VERSION="0.1"
+ID=nature-cetacean
+PRETTY_NAME="Vaquita"
+VERSION_ID="0.1"
+HOME_URL="http://example.com/"
+SUPPORT_URL="http://example.com/"
+VERSION_CODENAME=vaquita

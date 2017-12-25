@@ -1,0 +1,6 @@
+[submodule "meta-oe-core"]
+	path = meta-oe-core
+	url = https://bitbucket.org/nature-linux/meta-oe-core.git
+[submodule "meta-opensource"]
+	path = meta-opensource
+	url = https://bitbucket.org/nature-linux/meta-opensource.git

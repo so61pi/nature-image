@@ -1,0 +1,8 @@
+NAME="Chipmunk"
+VERSION="0.1"
+ID=nature-rodent
+PRETTY_NAME="Chipmunk"
+VERSION_ID="0.1"
+HOME_URL="http://example.com/"
+SUPPORT_URL="http://example.com/"
+VERSION_CODENAME=chipmunk

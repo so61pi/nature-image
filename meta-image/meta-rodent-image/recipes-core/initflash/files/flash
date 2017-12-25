@@ -1,0 +1,27 @@
+#!/usr/bin/sh
+
+INITFLASHDIR="/initflash"
+
+# reset u-boot env state
+echo 0 > /sys/block/mmcblk1boot1/force_ro
+dd if=/dev/zero of=/dev/mmcblk1boot1 bs=1M
+fw_setenv empty
+
+# stop on error for now
+set -e
+
+# wipe old partition table
+dd if=/dev/zero of=/dev/mmcblk1 bs=1M count=1
+
+sfdisk /dev/mmcblk1 < "$INITFLASHDIR/disklayout"
+sleep 1
+
+mkfs.vfat /dev/mmcblk1p1
+TMPDIR=$(mktemp -d)
+mount -t vfat /dev/mmcblk1p1 "$TMPDIR"
+cp "$INITFLASHDIR/MLO" "$INITFLASHDIR/u-boot.img" "$TMPDIR"
+umount "$TMPDIR"
+
+swupdate -e stable,copy1 -i "$INITFLASHDIR/rodent-firmware-beaglebone.swu"
+
+poweroff

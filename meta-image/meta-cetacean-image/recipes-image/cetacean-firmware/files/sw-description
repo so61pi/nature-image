@@ -1,0 +1,24 @@
+software =
+{
+    version = "0.1.0";
+
+    cetacean-nature-qemux86-64 = {
+        hardware-compatibility: [ "1.0" ];
+
+        images: (
+            {
+                filename = "nothing-image-qemux86-64.squashfs";
+                device = "/var/lib/firmware-upgrade/rootdev";
+                type = "raw";
+                installed-directly = true;
+            }
+        );
+
+        files: (
+            {
+                filename = "bzImage";
+                path = "/var/lib/firmware-upgrade/kernel";
+            }
+        );
+    };
+}
