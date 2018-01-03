@@ -1,0 +1,16 @@
+diff --git a/common/board_r.c b/common/board_r.c
+index a3b9bfb8ee..573399ff7f 100644
+--- a/common/board_r.c
++++ b/common/board_r.c
+@@ -469,8 +469,10 @@ static int should_load_env(void)
+ static int initr_env(void)
+ {
+ 	/* initialize environment */
+-	if (should_load_env())
++	if (should_load_env()) {
++		printf("--------------------- Crappy fix for mmc_init failure\n");
+ 		env_relocate();
++	}
+ 	else
+ 		set_default_env(NULL);
+ #ifdef CONFIG_OF_CONTROL

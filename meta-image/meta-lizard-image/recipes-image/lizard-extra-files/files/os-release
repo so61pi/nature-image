@@ -1,0 +1,8 @@
+NAME="Cyclura"
+VERSION="1.0"
+ID=nature-lizard
+PRETTY_NAME="Cyclura"
+VERSION_ID="1.0"
+HOME_URL="http://example.com/"
+SUPPORT_URL="http://example.com/"
+VERSION_CODENAME=cyclura

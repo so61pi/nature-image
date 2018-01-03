@@ -1,0 +1,10 @@
+# The disk layout used is:
+#    0                      -> 8*1024                           - reserverd
+#    8*1024                 ->                                  - arm combined spl/u-boot or aarch64 spl
+#    40*1024                ->                                  - aarch64 u-boot
+#    2048*1024              -> BOOT_SPACE                       - bootloader and kernel
+
+part u-boot --source rawcopy --sourceparams="file=u-boot-sunxi-with-spl.bin" --no-table --align 8
+part /boot  --source bootimg-partition --fstype=vfat --label BOOT --active --align 2048 --size 16
+part /      --source rootfs --fstype=ext4 --label ROOTFS-1 --align 4 --size 160M
+part /      --source rootfs --fstype=ext4 --label ROOTFS-2 --align 4 --size 160M

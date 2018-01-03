@@ -1,0 +1,8 @@
+#!/bin/sh
+
+RUNROOTFS=/run/rootfs
+
+mkdir $RUNROOTFS
+
+mkdir $RUNROOTFS/etc
+touch $RUNROOTFS/etc/hostname
