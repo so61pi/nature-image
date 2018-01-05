@@ -8,11 +8,13 @@ if [ "$#" -ne 1 ]; then
     return 1
 fi
 
+NATURE_IMAGE_ROOT=$(realpath "$PWD/..")
+
 SETUP_IMAGE="$1"
-SETUP_OECORE="$PWD/meta-oe-core"
-SETUP_COMMON_CONF="$PWD/conf"
-SETUP_IMAGE_CONF="$PWD/meta-image/meta-$SETUP_IMAGE/imgconf"
-SETUP_IMAGE_BUILDDIR="$PWD/build/build-$SETUP_IMAGE"
+SETUP_OECORE="$NATURE_IMAGE_ROOT/meta-oe-core"
+SETUP_COMMON_CONF="$NATURE_IMAGE_ROOT/conf"
+SETUP_IMAGE_CONF="$NATURE_IMAGE_ROOT/meta-image/meta-$SETUP_IMAGE/imgconf"
+SETUP_IMAGE_BUILDDIR="$NATURE_IMAGE_ROOT/build/build-$SETUP_IMAGE"
 
 for d in "$SETUP_OECORE" "$SETUP_COMMON_CONF" "$SETUP_IMAGE_CONF"; do
     if [ ! -e "$d" ]; then
