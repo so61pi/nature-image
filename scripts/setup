@@ -1,16 +1,30 @@
 #!/bin/sh
 
-# This script can only be sourced
-# . ./setup cetacean-image
+# This script and other scripts are sourced directly,
+# therefore we need to avoid using conventional syntax.
+#
+# For example, we should use
+#   BDIR="$SETUP_IMAGE_BUILDDIR" . "$SETUP_OECORE/openembedded-core/oe-init-build-env"
+# instead of
+#   . "$SETUP_OECORE/openembedded-core/oe-init-build-env" "$SETUP_IMAGE_BUILDDIR"
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <image>" >&2
-    return 1
+# NOTE:
+#   This script can only be sourced from its directory.
+
+SETUP_IMAGE="$IMAGE"
+if [ -z "$SETUP_IMAGE" ]; then
+    # Give it another try with $1
+    SETUP_IMAGE="$1"
+    if [ -z "$SETUP_IMAGE" ]; then
+        echo "Usage:" >&2
+        echo "    IMAGE=<image> . $0" >&2
+        echo "    . $0 <image>" >&2
+        exit 1
+    fi
 fi
 
-NATURE_IMAGE_ROOT=$(realpath "$PWD/..")
+NATURE_IMAGE_ROOT=$(readlink -f "$PWD/..")
 
-SETUP_IMAGE="$1"
 SETUP_OECORE="$NATURE_IMAGE_ROOT/meta-oe-core"
 SETUP_COMMON_CONF="$NATURE_IMAGE_ROOT/conf"
 SETUP_IMAGE_CONF="$NATURE_IMAGE_ROOT/meta-image/meta-$SETUP_IMAGE/imgconf"
@@ -40,6 +54,11 @@ cat "$SETUP_COMMON_CONF/common.local.conf" "$SETUP_IMAGE_CONF/local.conf" > "$SE
 # Create an empty templateconf.cfg
 touch "$SETUP_IMAGE_BUILDDIR/conf/templateconf.cfg"
 
+# Symlink bitbake
 ln -sfr --no-dereference "$SETUP_OECORE/bitbake" "$SETUP_OECORE/openembedded-core/bitbake"
 
-. "$SETUP_OECORE/openembedded-core/oe-init-build-env" "$SETUP_IMAGE_BUILDDIR"
+# Setting correct OEROOT here to prevent oe-init-build-env from guessing the wrong one.
+OEROOT="$SETUP_OECORE/openembedded-core"
+OEROOT=$(readlink -f "$OEROOT")
+
+BDIR="$SETUP_IMAGE_BUILDDIR" . "$SETUP_OECORE/openembedded-core/oe-init-build-env"

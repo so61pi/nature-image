@@ -1,8 +1,20 @@
+**`buildall`**
+
+To build all images, you could use `buildall` script.
+
+```shell
+cd scripts
+./buildall
+```
+
+
 **`cetacean-image`**
 
 The cetacean image can be used to run in a hypervisor (`QEMU`, `VirtualBox`, `VMWare`). To build the image and firmware, you can use the following commands
 
 ```shell
+cd scripts
+
 # Create build directory and configuration
 . ./setup cetacean-image
 
@@ -25,6 +37,7 @@ firmware-upgrade -i <url>
 This image can be used in the `BeagleBone Black` board. To build the firmware and initial flasher image (which can be used to flash the board's eMMC), you can use the following commands
 
 ```shell
+cd scripts
 # Create build directory and configuration
 . ./setup rodent-image
 
