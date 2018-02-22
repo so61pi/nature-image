@@ -3,7 +3,7 @@
 
 bin*/
 build*/
-meta-private/meta/
+meta-private/meta
 
 CMakeLists.txt.user
 *.py[co]
