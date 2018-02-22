@@ -6,5 +6,6 @@
 
 part u-boot --source rawcopy --sourceparams="file=u-boot-sunxi-with-spl.bin" --no-table --align 8
 part /boot  --source bootimg-partition --fstype=vfat --label BOOT --active --align 2048 --size 16
-part /      --source rootfs --fstype=ext4 --label ROOTFS-1 --align 4 --size 160M
-part /      --source rootfs --fstype=ext4 --label ROOTFS-2 --align 4 --size 160M
+part /      --source rootfs --fstype=ext4 --label ROOTFS-1 --align 4 --size 256M
+part /      --source rootfs --fstype=ext4 --label ROOTFS-2 --align 4 --size 256M
+part /data  --fstype=ext4 --label DATA --align 4 --size 128M

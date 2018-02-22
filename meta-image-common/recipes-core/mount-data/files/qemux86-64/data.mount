@@ -1,0 +1,11 @@
+[Unit]
+Description=Mount /data
+ConditionPathIsDirectory=/data
+Before=local-fs.target
+After=swap.target
+
+[Mount]
+What=PARTLABEL=DATA
+Where=/data
+Type=ext4
+Options=defaults

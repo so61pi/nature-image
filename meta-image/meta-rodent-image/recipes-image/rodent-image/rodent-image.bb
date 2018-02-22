@@ -46,6 +46,8 @@ IMAGE_INSTALL_append = " dropbear iputils vim-tiny tzdata   \
                          less grep findutils tree net-tools \
                          "
 
+IMAGE_INSTALL_append = " mount-data "
+
 
 #======================================#
 #                TASKS                 #

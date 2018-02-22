@@ -46,6 +46,8 @@ IMAGE_INSTALL_append = " dropbear iputils vim-tiny tzdata   \
                          less grep findutils tree net-tools \
                          "
 
+IMAGE_INSTALL_append = " mount-data "
+
 # This is added to wic command (which is invoked in image_types_wic.bbclass)
 # If we don't have this, the wic command will add an entry to etc/fstab, and
 # can lead to unbootable system.
