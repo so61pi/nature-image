@@ -56,6 +56,6 @@ if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" ]; then
         fi
 
         IMAGE=lizard-image . ./setup
-        bitbake lizard-image
+        bitbake lizard-firmware
     )
 fi
