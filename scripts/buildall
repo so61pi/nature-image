@@ -6,6 +6,8 @@
 # ASCII Font
 #   ANSI Shadow
 
+NATURE_LINUX_BUILD_STATUS=0
+
 if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_CETACEAN_IMAGE" ]; then
     (
         if [ -z "$NATURE_LINUX_BUILD_BORING" ]; then
@@ -22,6 +24,9 @@ if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_CETACEAN_IMAGE" ]; then
         IMAGE=cetacean-image . ./setup
         bitbake cetacean-firmware
     )
+    if [ $? -ne 0 ]; then
+        NATURE_LINUX_BUILD_STATUS=1
+    fi
 fi
 
 if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_RODENT_IMAGE" ]; then
@@ -40,6 +45,9 @@ if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_RODENT_IMAGE" ]; then
         IMAGE=rodent-image . ./setup
         bitbake rodent-flasher-image
     )
+    if [ $? -ne 0 ]; then
+        NATURE_LINUX_BUILD_STATUS=1
+    fi
 fi
 
 if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" ]; then
@@ -58,4 +66,9 @@ if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" ]; then
         IMAGE=lizard-image . ./setup
         bitbake lizard-firmware
     )
+    if [ $? -ne 0 ]; then
+        NATURE_LINUX_BUILD_STATUS=1
+    fi
 fi
+
+exit $NATURE_LINUX_BUILD_STATUS
