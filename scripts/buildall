@@ -8,9 +8,10 @@
 
 NATURE_LINUX_BUILD_STATUS=0
 
-if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_CETACEAN_IMAGE" ]; then
+
+if [ "$NATURE_LINUX_BUILD_EXCLUDE_CETACEAN_IMAGE" != "1" ]; then
     (
-        if [ -z "$NATURE_LINUX_BUILD_BORING" ]; then
+        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
             echo '                                                                   '
             echo ' ██████╗███████╗████████╗ █████╗  ██████╗███████╗ █████╗ ███╗   ██╗'
             echo '██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║'
@@ -29,9 +30,10 @@ if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_CETACEAN_IMAGE" ]; then
     fi
 fi
 
-if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_RODENT_IMAGE" ]; then
+
+if [ "$NATURE_LINUX_BUILD_EXCLUDE_RODENT_IMAGE" != "1" ]; then
     (
-        if [ -z "$NATURE_LINUX_BUILD_BORING" ]; then
+        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
             echo '                                                    '
             echo '██████╗  ██████╗ ██████╗ ███████╗███╗   ██╗████████╗'
             echo '██╔══██╗██╔═══██╗██╔══██╗██╔════╝████╗  ██║╚══██╔══╝'
@@ -50,9 +52,10 @@ if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_RODENT_IMAGE" ]; then
     fi
 fi
 
-if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" ]; then
+
+if [ "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" != "1" ]; then
     (
-        if [ -z "$NATURE_LINUX_BUILD_BORING" ]; then
+        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
             echo '                                           '
             echo '██╗     ██╗███████╗ █████╗ ██████╗ ██████╗ '
             echo '██║     ██║╚══███╔╝██╔══██╗██╔══██╗██╔══██╗'
@@ -70,5 +73,6 @@ if [ -z "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" ]; then
         NATURE_LINUX_BUILD_STATUS=1
     fi
 fi
+
 
 exit $NATURE_LINUX_BUILD_STATUS
