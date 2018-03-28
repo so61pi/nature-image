@@ -2,10 +2,12 @@
 Description=SSH Key Generation
 RequiresMountsFor=/var /var/lib
 ConditionPathExists=!/var/lib/dropbear/dropbear_ecdsa_host_key
+ConditionPathExists=!/var/lib/dropbear/dropbear_rsa_host_key
 
 [Service]
 EnvironmentFile=-/etc/default/dropbear
 Type=oneshot
 ExecStart=/usr/bin/mkdir -p /var/lib/dropbear
 ExecStart=/usr/sbin/dropbearkey -t ecdsa -s 521 -f /var/lib/dropbear/dropbear_ecdsa_host_key
+ExecStart=/usr/sbin/dropbearkey -t rsa -s 2048 -f /var/lib/dropbear/dropbear_rsa_host_key
 RemainAfterExit=yes

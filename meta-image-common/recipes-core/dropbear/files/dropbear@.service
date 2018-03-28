@@ -5,7 +5,7 @@ After=syslog.target dropbearkey.service
 
 [Service]
 EnvironmentFile=-/etc/default/dropbear
-ExecStart=-/usr/sbin/dropbear -i -r /var/lib/dropbear/dropbear_ecdsa_host_key
+ExecStart=-/usr/sbin/dropbear -i -r /var/lib/dropbear/dropbear_ecdsa_host_key -r /var/lib/dropbear/dropbear_rsa_host_key
 ExecReload=/usr/bin/kill -HUP $MAINPID
 StandardInput=socket
 KillMode=process
