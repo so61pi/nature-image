@@ -47,6 +47,8 @@ IMAGE_INSTALL_append = " dropbear iputils vim-tiny tzdata   \
                          less grep findutils tree net-tools \
                          "
 
+IMAGE_INSTALL_append = " e2fsprogs-mke2fs "
+
 # deploy directory for this image
 DEPLOY_DIR_IMAGE_append = "/flasher"
 IMAGE_BOOT_FILES_append = " uEnv.txt "
