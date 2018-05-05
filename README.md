@@ -1,56 +1,115 @@
-**`buildall`**
+## Overview
 
-To build all images, you could use `buildall` script.
+This repo contains the yocto recipes to build several Linux images for embedded system. Currently, there are 4 images for 4 different platforms:
+
+| Image          | Platform/Board   | Firmware          | Description                                                                                                           |
+|----------------|------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------|
+| cetacean-image | QEMU x86_64      | cetacean-firmware | The cetacean-image can be used to run in a hypervisor (QEMU, VirtualBox, VMWare).                                     |
+| rodent-image   | BeagleBone Black | rodent-firmware   | To use this image, you have to build the init flasher (rodent-flasher-image) to flash the image to the on board eMMC. |
+| lizard-image   | Cubieboard2      | lizard-firmware   |                                                                                                                       |
+| mushroom-image | RPi3             | mushroom-firmware |                                                                                                                       |
+
+## How to build
+
+There are 2 ways to build the images:
+
+- Build with docker (recommended).
+    - You have to create the docker image first by running `make docker-build`.
+- Or build directly on your system without docker.
+
+You can also build all the images together or seperately.
+
+### Build all images
+
+This will take a very long time to complete for first build, you should leave it run at night.
+
+#### Build with docker
+
+```shell
+make
+```
+
+#### Build without docker
 
 ```shell
 cd scripts
 ./buildall
 ```
 
+### Build single image
 
-**`cetacean-image`**
+#### 1. Get into `scripts` directory
 
-The cetacean image can be used to run in a hypervisor (`QEMU`, `VirtualBox`, `VMWare`). To build the image and firmware, you can use the following commands
+- With docker
+
+```shell
+make docker-shell
+```
+
+- Without docker
 
 ```shell
 cd scripts
-
-# Create build directory and configuration
-. ./setup cetacean-image
-
-# Build the image
-bitbake cetacean-image
-
-# Build the firmware
-bitbake cetacean-firmware
 ```
 
-To upgrade firmware, you can use `firmware-upgrade` (a wrapper for `swupdate`)
+#### 2. Setup build env
 
 ```shell
-firmware-upgrade -i <url>
+IMAGE=<image-name> . ./setup
+
+# Example:
+# IMAGE=cetacean-image . ./setup
 ```
 
+#### 3. Building
 
-**`rodent-image`**
-
-This image can be used in the `BeagleBone Black` board. To build the firmware and initial flasher image (which can be used to flash the board's eMMC), you can use the following commands
+- Build firmware
 
 ```shell
-cd scripts
-# Create build directory and configuration
-. ./setup rodent-image
+bitbake <firmware-name>
 
-# Build the firmware
-bitbake rodent-firmware
-
-# Build the initial flasher image
-# You can dd the output image to and SD-Card and use it to flash the device
-bitbake rodent-flasher-image
+# Example:
+# bitbake cetacean-firmware
 ```
 
-To upgrade firmware, you can use `swupdate-net` (a wrapper for `swupdate`)
+- Build wic
 
 ```shell
-swupdate-net <url>
+bitbake <image-name>
+
+# Example:
+# bitbake mushroom-image
+```
+
+- Build init flasher
+
+```shell
+bitbake <init-flasher-name>
+
+# Example:
+# bitbake rodent-flasher-image
+```
+
+## How to use
+
+- The output of the build process (firmware, wic...) is at `build/build-<image-name>/tmp/deploy/images/<machine>/` (like `build/build-mushroom-image/tmp/deploy/images/raspberrypi3/`).
+- For cetacean image
+    - You could use VirtualBox or VMWare to create a machine and point the disk to `cetacean-image-qemux86-64.wic.vdi`.
+    - Note that cetacean uses GPT, please configurate your virtual machine accordingly.
+- For other images
+    - Copy the wic file to micro SD.
+    - Example for mushroom image `dd if=mushroom-image-raspberrypi3.wic of=/dev/<your-sd-dev> status=progress`
+
+## How to upgrade
+
+- For cetacean image
+
+```shell
+firmware-upgrade -i <url-to-swu>
+```
+
+- For other images
+
+```shell
+swupdate-net <url-to-swu>
 ```
