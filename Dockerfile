@@ -11,6 +11,11 @@ ARG userid
 RUN addgroup --quiet --gid ${groupid} builder
 RUN adduser --quiet --uid ${userid} --disabled-password --gecos '' --ingroup builder builder
 
+ARG gitusername
+ARG gituseremail
+RUN git config --system user.name "${gitusername}"
+RUN git config --system user.email "${gituseremail}"
+
 USER builder
 WORKDIR /code/scripts
 CMD ./buildall
