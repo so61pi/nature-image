@@ -1,0 +1,56 @@
+software =
+{
+    version = "1.0.0";
+
+    mushroom-nature-raspberrypi3 = {
+        hardware-compatibility: [ "1.0" ];
+        stable : {
+            copy1 : {
+                scripts: (
+                    {
+                        filename = "swupdate-script.sh";
+                        type = "preinstall";
+                    }
+                );
+                images: (
+                    {
+                        filename = "mushroom-image-raspberrypi3.ext4.gz";
+                        device = "/dev/mmcblk0p2";
+                        type = "raw";
+                        installed-directly = true;
+                        compressed = true;
+                    }
+                );
+                bootenv: (
+                    {
+                        name = "rootdev";
+                        value = "mmcblk0p2"
+                    }
+                );
+            };
+            copy2 : {
+                scripts: (
+                    {
+                        filename = "swupdate-script.sh";
+                        type = "preinstall";
+                    }
+                );
+                images: (
+                    {
+                        filename = "mushroom-image-raspberrypi3.ext4.gz";
+                        device = "/dev/mmcblk0p3";
+                        type = "raw";
+                        installed-directly = true;
+                        compressed = true;
+                    }
+                );
+                bootenv: (
+                    {
+                        name = "rootdev";
+                        value = "mmcblk0p3"
+                    }
+                );
+            };
+        };
+    }
+}

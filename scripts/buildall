@@ -75,4 +75,25 @@ if [ "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" != "1" ]; then
 fi
 
 
+if [ "$NATURE_LINUX_BUILD_EXCLUDE_MUSHROOM_IMAGE" != "1" ]; then
+    (
+        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
+            echo '                                                                         '
+            echo '███╗   ███╗██╗   ██╗███████╗██╗  ██╗██████╗  ██████╗  ██████╗ ███╗   ███╗'
+            echo '████╗ ████║██║   ██║██╔════╝██║  ██║██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║'
+            echo '██╔████╔██║██║   ██║███████╗███████║██████╔╝██║   ██║██║   ██║██╔████╔██║'
+            echo '██║╚██╔╝██║██║   ██║╚════██║██╔══██║██╔══██╗██║   ██║██║   ██║██║╚██╔╝██║'
+            echo '██║ ╚═╝ ██║╚██████╔╝███████║██║  ██║██║  ██║╚██████╔╝╚██████╔╝██║ ╚═╝ ██║'
+            echo '╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝'
+            echo '-------------------------------------------------------------------------'
+        fi
+
+        IMAGE=mushroom-image . ./setup
+        bitbake mushroom-firmware
+    )
+    if [ $? -ne 0 ]; then
+        NATURE_LINUX_BUILD_STATUS=1
+    fi
+fi
+
 exit $NATURE_LINUX_BUILD_STATUS

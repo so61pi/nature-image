@@ -1,0 +1,8 @@
+NAME="Chanterelle"
+VERSION="1.0"
+ID=nature-mushroom
+PRETTY_NAME="Chanterelle"
+VERSION_ID="1.0"
+HOME_URL="http://example.com/"
+SUPPORT_URL="http://example.com/"
+VERSION_CODENAME=chanterelle
