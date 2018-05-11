@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <fcntl.h>
+#include <ftw.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
@@ -108,100 +109,10 @@ bool IsDirectory(std::string const& path) {
 }
 
 
-void CopyFile(std::string const& src, std::string const& dst) {
-    // Use copy_file_range, require Linux > 4.5
-    auto copy_file_range = [](int fd_in, loff_t* off_in, int fd_out, loff_t* off_out, size_t len, unsigned int flags) -> loff_t {
-       return syscall(__NR_copy_file_range, fd_in, off_in, fd_out, off_out, len, flags);
-    };
-
-    auto const fdSrc = open(src.c_str(), O_RDONLY);
-    if (fdSrc == -1) {
-        THROWERRNO("open");
-    }
-    SCOPE_EXIT([&]{ close(fdSrc); });
-
-    struct stat sb;
-    if (fstat(fdSrc, &sb) == -1) {
-        THROWERRNO("fstat");
-    }
-
-    auto const fdDst = open(dst.c_str(), O_WRONLY | O_TRUNC, 0644);
-    if (fdDst == -1) {
-        THROWERRNO("open");
-    }
-    SCOPE_EXIT([&]{ close(fdDst); });
-
-    auto size = sb.st_size;
-    do {
-        auto copied = copy_file_range(fdSrc, NULL, fdDst, NULL, size, 0);
-        if (copied == -1) {
-            THROWERRNO("copy_file_range");
-        }
-        size -= copied;
-    } while (size > 0);
-}
-
-
-int RunProgram(std::vector<char const*> const& args) {
-    assert(!args.empty());
-
-    pid_t pid = fork();
-    if (pid == -1) {
-        THROWERRNO("fork");
-    } else if (pid > 0) {
-        // parent
-        int status;
-        if (waitpid(pid, &status, 0) == -1) {
-            THROWERRNO("waitpid");
-        }
-
-        if (!WIFEXITED(status)) {
-            THROWMSG(std::string(args[0]) + " stopped abnormally");
-        }
-
-        return WEXITSTATUS(status);
-    } else {
-        // child
-        execvp(args[0], const_cast<char* const*>(args.data()));
-        exit(EXIT_FAILURE);
-    }
-}
-
-
-void RebootSystem() {
-    std::vector<char const*> cmds{ "/usr/sbin/reboot", nullptr };
-    if (RunProgram(cmds) != 0) {
-        THROWMSG("cannot reboot system");
-    }
-}
-
-
-enum class ActionEnum {
-    Upgrade,
-    Rollback
-};
-
-
-enum class BootManagerEnum {
-    SystemdBoot
-};
-
-
 struct Options {
-    ActionEnum Action = ActionEnum::Upgrade;
-    bool Reboot = true;
-
-    BootManagerEnum BootManager = BootManagerEnum::SystemdBoot;
-
-    bool MountBoot = true;
     std::string BootDirectory = "/boot";
-
-    bool CreateSymlinks = true;
-    std::string SymlinksDirectory = "/var/lib/firmware-upgrade";
-
+    std::string SymlinksDirectory = "/var/lib/swupdate-helper";
     std::string KernelFileName = "bzImage";
-    std::string FirmwareFile;
-    std::vector<char const*> SwupdateArgs = { "/usr/bin/swupdate" };
 };
 
 
@@ -472,6 +383,11 @@ void MountBoot(std::string const& bootdir) {
 }
 
 
+void UmountBoot(std::string const& bootdir) {
+    umount(bootdir.c_str());
+}
+
+
 std::string GetSiblingKernelPath(std::string const& bootdir, std::string const& partlabel,
                                  std::string const& kernelfilename)
 {
@@ -480,27 +396,27 @@ std::string GetSiblingKernelPath(std::string const& bootdir, std::string const& 
 };
 
 
-std::string GetBootConfSymlinkPath(std::string const& symlinksdir) {
-    /* /var/lib/firmware-upgrade/bootconf */
-    return symlinksdir + "/bootconf";
+std::string GetSiblingBootConfSymlinkPath(std::string const& symlinksdir) {
+    /* /var/lib/swupdate-helper/sibling-bootconf */
+    return symlinksdir + "/sibling-bootconf";
 }
 
 
-std::string GetMainBootConfSymlinkPath(std::string const& symlinksdir) {
-    /* /var/lib/firmware-upgrade/bootconfmain */
-    return symlinksdir + "/bootconfmain";
+std::string GetCurrentBootConfSymlinkPath(std::string const& symlinksdir) {
+    /* /var/lib/swupdate-helper/current-bootconf */
+    return symlinksdir + "/current-bootconf";
 }
 
 
-std::string GetRootDevSymlinkPath(std::string const& symlinksdir) {
-    /* /var/lib/firmware-upgrade/rootdev */
-    return symlinksdir + "/rootdev";
+std::string GetSiblingRootDevSymlinkPath(std::string const& symlinksdir) {
+    /* /var/lib/swupdate-helper/sibling-rootdev */
+    return symlinksdir + "/sibling-rootdev";
 }
 
 
-std::string GetKernelSymlinkPath(std::string const& symlinksdir) {
-    /* /var/lib/firmware-upgrade/kernel */
-    return symlinksdir + "/kernel";
+std::string GetSiblingKernelSymlinkPath(std::string const& symlinksdir) {
+    /* /var/lib/swupdate-helper/sibling-kernel */
+    return symlinksdir + "/sibling-kernel";
 }
 
 
@@ -511,120 +427,55 @@ void CreateSymlinksDirectory(std::string const& symlinksdir) {
 }
 
 
-class Upgrader {
-public:
-    explicit Upgrader(Options opts) : mOpts{ std::move(opts) } {}
+void RemoveSymlinksDirectory(std::string const& symlinksdir) {
+    remove(GetSiblingRootDevSymlinkPath(symlinksdir).c_str());
+    remove(GetSiblingKernelSymlinkPath(symlinksdir).c_str());
+    remove(GetSiblingBootConfSymlinkPath(symlinksdir).c_str());
+    remove(GetCurrentBootConfSymlinkPath(symlinksdir).c_str());
+}
 
-    Upgrader(Upgrader const&) = delete;
-    Upgrader(Upgrader&&) = delete;
-    Upgrader& operator=(Upgrader const&) = delete;
-    Upgrader& operator=(Upgrader&&) = delete;
 
-    void Upgrade() {
-        DoUpgrade();
-        if (mOpts.Reboot) {
-            RebootSystem();
-        }
-    }
-
-    void Rollback() {
-        DoRollback();
-        if (mOpts.Reboot) {
-            RebootSystem();
-        }
-    }
-
-private:
-    virtual void DoUpgrade() = 0;
-    virtual void DoRollback() = 0;
-
-protected:
-    Options const mOpts;
+std::string SystemdBootGetSiblingBootConfPath(std::string const& bootdir, std::string const& partlabel) {
+    /* /boot/kernel/<part-label>/loader.conf */
+    return bootdir + "/kernel/" + partlabel + "/loader.conf";
 };
 
 
-class SystemdBootUpgrader final : public Upgrader {
-private:
-    static std::string SystemdBootGetSiblingBootConfPath(std::string const& bootdir, std::string const& partlabel) {
-        /* /boot/kernel/<part-label>/loader.conf */
-        return bootdir + "/kernel/" + partlabel + "/loader.conf";
-    };
-
-
-    static std::string SystemdBootGetMainBootConfPath(std::string const& bootdir) {
-        /* /boot/loader/loader.conf */
-        return bootdir + "/loader/loader.conf";
-    };
-
-
-public:
-    explicit SystemdBootUpgrader(Options opts) : Upgrader{ std::move(opts) } {}
-
-
-public:
-    SystemdBootUpgrader(SystemdBootUpgrader const&) = delete;
-    SystemdBootUpgrader(SystemdBootUpgrader&&) = delete;
-    SystemdBootUpgrader& operator=(SystemdBootUpgrader const&) = delete;
-    SystemdBootUpgrader& operator=(SystemdBootUpgrader&&) = delete;
-
-
-private:
-    void SystemdBootCreateSymlinks() {
-        CreateSymlinksDirectory(mOpts.SymlinksDirectory);
-
-        auto const partlabel = GetSiblingPartLabel();
-
-        // For upgrading rootfs
-        CreateSymlink(GetSiblingPartDevPath(partlabel),
-                      GetRootDevSymlinkPath(mOpts.SymlinksDirectory));
-
-        // For upgrading kernel
-        CreateSymlink(GetSiblingKernelPath(mOpts.BootDirectory, partlabel, mOpts.KernelFileName),
-                      GetKernelSymlinkPath(mOpts.SymlinksDirectory));
-
-        // For upgrading loader.conf
-        CreateSymlink(SystemdBootGetSiblingBootConfPath(mOpts.BootDirectory, partlabel),
-                      GetBootConfSymlinkPath(mOpts.SymlinksDirectory));
-        CreateSymlink(SystemdBootGetMainBootConfPath(mOpts.BootDirectory),
-                      GetMainBootConfSymlinkPath(mOpts.SymlinksDirectory));
-    }
-
-
-    virtual void DoUpgrade() override {
-        if (mOpts.MountBoot) {
-            MountBoot(mOpts.BootDirectory);
-        }
-
-        if (mOpts.CreateSymlinks) {
-            SystemdBootCreateSymlinks();
-        }
-
-        if (mOpts.SwupdateArgs.size() > 2 /* [swupdate, ..., nullptr] */) {
-            if (RunProgram(mOpts.SwupdateArgs) != 0) {
-                THROWMSG("swupdate failed");
-            }
-
-            // Now, switch to new loader.conf
-            CopyFile(GetBootConfSymlinkPath(mOpts.SymlinksDirectory),
-                     GetMainBootConfSymlinkPath(mOpts.SymlinksDirectory));
-        }
-    }
-
-
-    virtual void DoRollback() override {
-        if (mOpts.MountBoot) {
-            MountBoot(mOpts.BootDirectory);
-        }
-
-        if (mOpts.CreateSymlinks) {
-            SystemdBootCreateSymlinks();
-        }
-
-        // Simply change loader.conf
-        CopyFile(GetBootConfSymlinkPath(mOpts.SymlinksDirectory),
-                 GetMainBootConfSymlinkPath(mOpts.SymlinksDirectory));
-    }
+std::string SystemdBootGetCurrentBootConfPath(std::string const& bootdir) {
+    /* /boot/loader/loader.conf */
+    return bootdir + "/loader/loader.conf";
 };
+
+
+void SetupLinks(Options const& opts) {
+    UmountBoot(opts.BootDirectory);
+    MountBoot(opts.BootDirectory);
+    RemoveSymlinksDirectory(opts.SymlinksDirectory);
+    CreateSymlinksDirectory(opts.SymlinksDirectory);
+
+    auto const partlabel = GetSiblingPartLabel();
+
+    //
+    // /var/lib/swupdate-helper/sibling-rootdev   -> /dev/...
+    // /var/lib/swupdate-helper/sibling-kernel    -> /boot/kernel/<partX-label>/bzImage
+    // /var/lib/swupdate-helper/sibling-bootconf  -> /boot/kernel/<partX-label>/loader.conf
+    // /var/lib/swupdate-helper/current-bootconf  -> /boot/loader/loader.conf
+    //
+
+    // For upgrading rootfs
+    CreateSymlink(GetSiblingPartDevPath(partlabel),
+                  GetSiblingRootDevSymlinkPath(opts.SymlinksDirectory));
+
+    // For upgrading kernel
+    CreateSymlink(GetSiblingKernelPath(opts.BootDirectory, partlabel, opts.KernelFileName),
+                  GetSiblingKernelSymlinkPath(opts.SymlinksDirectory));
+
+    // For upgrading loader.conf
+    CreateSymlink(SystemdBootGetSiblingBootConfPath(opts.BootDirectory, partlabel),
+                  GetSiblingBootConfSymlinkPath(opts.SymlinksDirectory));
+    CreateSymlink(SystemdBootGetCurrentBootConfPath(opts.BootDirectory),
+                  GetCurrentBootConfSymlinkPath(opts.SymlinksDirectory));
+}
 
 
 void Usage(char const* progname);
@@ -632,11 +483,6 @@ void Usage(char const* progname);
 
 int main(int argc, char* argv[]) {
     try {
-        if (argc == 1) {
-            Usage(*argv);
-            return EXIT_FAILURE;
-        }
-
         // Make sure that getopt_long doesn't print out error message
         // on unrecognized options.
         opterr = 0;
@@ -645,15 +491,10 @@ int main(int argc, char* argv[]) {
 
         option const longopts[] = {
             {"help",                no_argument,        nullptr, 'h'},
-            {"action",              required_argument,  nullptr, 'a'},
-            {"no-reboot",           no_argument,        nullptr, 'R'},
             {"boot-manager",        required_argument,  nullptr, 'u'},
-            {"no-mount-boot",       no_argument,        nullptr, 'M'},
             {"bootdir",             required_argument,  nullptr, 'b'},
-            {"no-create-symlinks",  no_argument,        nullptr, 'C'},
             {"symlinksdir",         required_argument,  nullptr, 's'},
             {"kernel-file-name",    required_argument,  nullptr, 'k'},
-            {"firmware",            required_argument,  nullptr, 'i'},
             {nullptr, 0, nullptr, 0}
         };
 
@@ -666,42 +507,16 @@ int main(int argc, char* argv[]) {
                 Usage(*argv);
                 return EXIT_SUCCESS;
 
-            case 'a': {
-                if (strcmp(optarg, "upgrade") == 0) {
-                    options.Action = ActionEnum::Upgrade;
-                } else if (strcmp(optarg, "rollback") == 0) {
-                    options.Action = ActionEnum::Rollback;
-                } else {
-                    std::cerr << "unknown argument for --action" << std::endl;
-                    return EXIT_FAILURE;
-                }
-                break;
-            }
-
-            case 'R':
-                options.Reboot = false;
-                break;
-
             case 'u': {
-                if (strcmp(optarg, "systemd-boot") == 0) {
-                    options.BootManager = BootManagerEnum::SystemdBoot;
-                } else {
+                if (strcmp(optarg, "systemd-boot") != 0) {
                     std::cerr << "unknown argument for --boot-manager" << std::endl;
                     return EXIT_FAILURE;
                 }
                 break;
             }
 
-            case 'M':
-                options.MountBoot = false;
-                break;
-
             case 'b':
                 options.BootDirectory = optarg;
-                break;
-
-            case 'C':
-                options.CreateSymlinks = false;
                 break;
 
             case 's':
@@ -710,10 +525,6 @@ int main(int argc, char* argv[]) {
 
             case 'k':
                 options.KernelFileName = optarg;
-                break;
-
-            case 'i':
-                options.FirmwareFile = optarg;
                 break;
 
             case ':':
@@ -741,27 +552,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // '--' marks the end of option parsing, the rest are options for swupdate
-        for (auto i = optind; i < argc; ++i) {
-            options.SwupdateArgs.emplace_back(argv[i]);
-        }
-
-        // Only use --firmware if there are no args for swupdate.
-        // Note: We keep the std::string of "-u ..." here because SwupdateArgs is std::vector<char const*>
-        auto const urlarg = "-u " + options.FirmwareFile;
-        if (options.SwupdateArgs.size() <= 1) {
-            // There are no args for swupdate.
-            if (options.FirmwareFile.empty()) {
-                std::cerr << "missing firmware file or swupdate arguments" << std::endl;
-                return EXIT_FAILURE;
-            }
-
-            options.SwupdateArgs.emplace_back("-d");
-            options.SwupdateArgs.emplace_back(urlarg.c_str());
-        }
-        options.SwupdateArgs.emplace_back(nullptr);
-
-
         auto const errors = ValidateOptions(options);
         if (!errors.empty()) {
             for (auto const& e : errors) {
@@ -770,25 +560,7 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
         }
 
-
-        // Create upgrader.
-        std::unique_ptr<Upgrader> upgrader;
-        switch (options.BootManager) {
-        case BootManagerEnum::SystemdBoot:
-            upgrader = std::make_unique<SystemdBootUpgrader>(options);
-            break;
-        }
-
-        // Process action.
-        switch (options.Action) {
-        case ActionEnum::Upgrade:
-            upgrader->Upgrade();
-            break;
-
-        case ActionEnum::Rollback:
-            upgrader->Rollback();
-            break;
-        }
+        SetupLinks(options);
 
         return EXIT_SUCCESS;
     } catch (std::exception const& e) {
@@ -804,14 +576,8 @@ void Usage(char const* progname) {
     std::cout << progname << " <options>\n\n"
                  "Options\n"
                  " -h, --help                 display help\n"
-                 " -a, --action               upgrade or rollback\n"
-                 " -R, --no-reboot            do not reboot\n"
                  " -u, --boot-manager         boot manager\n"
-                 " -M, --no-mount-boot        do not mount ESP\n"
                  " -b, --bootdir              directory for mouting ESP\n"
-                 " -C, --no-create-symlinks   do not create upgrading symlinks\n"
-                 " -s, --symlinksdir          directory for symlinks\n"
                  " -k, --kernel-file-name     kernel file name\n"
-                 " -i, --firmware             firmware file\n"
               << std::endl;
 }

@@ -5,19 +5,43 @@ software =
     cetacean-nature-qemux86-64 = {
         hardware-compatibility: [ "1.0" ];
 
+        embedded-script = "
+function os.capture(cmd)
+    local f = assert(io.popen(cmd, 'r'))
+    local s = assert(f:read('*all'))
+    f:close()
+    return s
+end
+
+
+function prepare(image)
+    local out = os.capture('swupdate-helper')
+    return true, image
+end
+";
+
+        scripts: (
+            {
+                filename = "swupdate-script.sh";
+                type = "shellscript";
+            }
+        );
+
         images: (
             {
-                filename = "nothing-image-qemux86-64.squashfs";
-                device = "/var/lib/firmware-upgrade/rootdev";
+                filename = "cetacean-image-qemux86-64.squashfs";
+                device = "/var/lib/swupdate-helper/sibling-rootdev";
                 type = "raw";
                 installed-directly = true;
+                hook = "prepare";
             }
         );
 
         files: (
             {
                 filename = "bzImage";
-                path = "/var/lib/firmware-upgrade/kernel";
+                path = "/var/lib/swupdate-helper/sibling-kernel";
+                hook = "prepare";
             }
         );
     };

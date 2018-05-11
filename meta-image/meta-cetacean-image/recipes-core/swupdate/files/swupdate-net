@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ $# -ne 1 ]; then
+    echo "Usage: swupdate-net <url>"
+    return 1
+fi
+
+url="$1"
+
+swupdate-progress -w -r &
+swupdate -v -d "-u $url"

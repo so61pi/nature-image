@@ -1,7 +1,7 @@
 #======================================#
 #           SUMMARY/LICENCE            #
 #--------------------------------------#
-SUMMARY = "Example Firmware Upgrader"
+SUMMARY = "swupdate helper"
 
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
@@ -16,7 +16,7 @@ inherit cmake
 #======================================#
 #                SOURCE                #
 #--------------------------------------#
-SRC_URI = "file://firmware-upgrade.cpp;subdir=${S}      \
+SRC_URI = "file://swupdate-helper.cpp;subdir=${S}       \
            file://CMakeLists.txt;subdir=${S}            \
            "
 
@@ -24,7 +24,7 @@ SRC_URI = "file://firmware-upgrade.cpp;subdir=${S}      \
 #======================================#
 #           DEPENDS/PROVIDES           #
 #--------------------------------------#
-DEPENDS = " libutil-linux systemd "
+DEPENDS = " swupdate-extra-files libutil-linux systemd "
 
 RDEPENDS_${PN} = " swupdate "
 

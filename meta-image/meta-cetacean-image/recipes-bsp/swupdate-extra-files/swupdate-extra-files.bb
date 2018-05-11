@@ -1,7 +1,7 @@
 #======================================#
 #           SUMMARY/LICENCE            #
 #--------------------------------------#
-SUMMARY = "Compound image"
+SUMMARY = "Extra files for swupdate cpio"
 
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
@@ -10,15 +10,15 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 #======================================#
 #           REQUIRE/INHERIT            #
 #--------------------------------------#
-# swupdate includes all file in SRC_URI to the swu,
-# therefore we cannot specify the license file there
-inherit swupdate
+inherit deploy nopackages
 
 
 #======================================#
 #                SOURCE                #
 #--------------------------------------#
-SRC_URI = "file://sw-description"
+SRC_URI = " file://swupdate-script.sh "
+
+S = "${WORKDIR}"
 
 
 #======================================#
@@ -29,27 +29,18 @@ SRC_URI = "file://sw-description"
 #======================================#
 #         BUILD CONFIGURATIONS         #
 #--------------------------------------#
-# IMAGE_DEPENDS: list of Yocto images that contains a root filesystem
-# it will be ensured they are built before creating swupdate image
-IMAGE_DEPENDS = "cetacean-image"
-
-# SWUPDATE_IMAGES: list of images that will be part of the compound image
-# the list can have any binaries - images must be in the DEPLOY directory
-SWUPDATE_IMAGES = "cetacean-image"
-
-# SWUPDATE_FILES: list of files that will part of the compound image
-SWUPDATE_FILES = "swupdate-script.sh bzImage"
-
-# Images can have multiple formats - define which image must be
-# taken to be put in the compound image
-SWUPDATE_IMAGES_FSTYPES[cetacean-image] = ".squashfs"
-
-COMPATIBLE_MACHINE = "qemuall"
+INHIBIT_DEFAULT_DEPS = "1"
 
 
 #======================================#
 #                TASKS                 #
 #--------------------------------------#
+do_deploy() {
+    install -d ${DEPLOYDIR}
+    cp ${S}/swupdate-script.sh ${DEPLOYDIR}/
+}
+
+addtask deploy before do_build after do_install
 
 
 #======================================#

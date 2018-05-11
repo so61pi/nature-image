@@ -35,7 +35,7 @@ IMAGE_INSTALL_append = " systemd systemd-zsh-completion systemd-extra-files  "
 IMAGE_INSTALL_append = " zsh zsh-startup zsh-completion "
 IMAGE_INSTALL_append = " util-linux util-linux-mount util-linux-agetty util-linux-uuidd "
 IMAGE_INSTALL_append = " procps procps-watch procps-pidof procps-free procps-kill procps-uptime procps-sysctl "
-IMAGE_INSTALL_append = " swupdate swupdate-tools firmware-upgrade "
+IMAGE_INSTALL_append = " swupdate swupdate-tools swupdate-helper "
 IMAGE_INSTALL_append = " ncurses-tools ncurses-terminfo ncurses-terminfo-base "
 
 IMAGE_INSTALL_append = " libpam                                                             \

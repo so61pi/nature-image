@@ -102,14 +102,6 @@ bitbake <init-flasher-name>
 
 ## How to upgrade
 
-- For cetacean image
-
-```shell
-firmware-upgrade -i <url-to-swu>
-```
-
-- For other images
-
 ```shell
 swupdate-net <url-to-swu>
 ```
