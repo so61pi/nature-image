@@ -20,7 +20,7 @@ pipeline {
 
         stage('Compile') {
             steps {
-                sh 'cd scripts && ./buildall'
+                sh 'make'
             }
         }
 
