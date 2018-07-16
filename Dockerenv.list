@@ -3,7 +3,14 @@ LANG=en_US.UTF-8
 LANGUAGE=en_US.UTF-8
 TERM=xterm-256color
 
+# Use prebuilt shared-state
+#
 # BB_ENV_EXTRAWHITE=INHERIT SSTATE_MIRRORS SOURCE_MIRROR_URL
 # INHERIT=own-mirrors
 # SSTATE_MIRRORS=file://.* https://example.com/yocto/sstate-cache/PATH;downloadfilename=PATH
 # SOURCE_MIRROR_URL=https://example.com/yocto/downloads
+
+# Generate tarballs for Git/Mercurial repositories
+#
+# BB_ENV_EXTRAWHITE=BB_GENERATE_MIRROR_TARBALLS
+# BB_GENERATE_MIRROR_TARBALLS=1
