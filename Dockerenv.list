@@ -3,7 +3,7 @@ LANG=en_US.UTF-8
 LANGUAGE=en_US.UTF-8
 TERM=xterm-256color
 
-# BB_ENV_EXTRAWHITE=INHERIT STATE_MIRRORS SOURCE_MIRROR_URL
+# BB_ENV_EXTRAWHITE=INHERIT SSTATE_MIRRORS SOURCE_MIRROR_URL
 # INHERIT=own-mirrors
-# STATE_MIRRORS=file://.* https://example.com/yocto/sstate-cache/PATH;downloadfilename=PATH
+# SSTATE_MIRRORS=file://.* https://example.com/yocto/sstate-cache/PATH;downloadfilename=PATH
 # SOURCE_MIRROR_URL=https://example.com/yocto/downloads
