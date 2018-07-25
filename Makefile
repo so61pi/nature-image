@@ -17,7 +17,7 @@ docker-run:
 
 .PHONY: docker-shell
 docker-shell:
-	docker run -it --rm --init --env-file Dockerenv.list -v $(shell pwd):/code:rw $(IMAGETAG) bash
+	docker run -it --rm --init --env-file Dockerenv.list -v $(shell pwd):/code:rw $(IMAGETAG) fish
 
 
 # NOTE: The docker-clean is used to clean ALL the used containers and images in the system.
