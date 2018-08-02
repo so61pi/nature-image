@@ -1,4 +1,4 @@
-IMAGETAG	:= image-yocto-builder
+IMAGETAG	:= nature-image-builder
 
 
 .PHONY: all
