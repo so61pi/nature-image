@@ -1,0 +1,8 @@
+if [ -d /etc/zsh/zshrc.d ]; then
+    for i in /etc/zsh/zshrc.d/*.zsh; do
+        if [ -r $i ]; then
+            . "$i"
+        fi
+    done
+    unset i
+fi

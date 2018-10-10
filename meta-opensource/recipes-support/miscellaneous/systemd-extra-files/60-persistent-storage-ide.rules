@@ -1,0 +1,14 @@
+KERNEL!="hd*", GOTO="persistent_storage_end"
+
+# probe filesystem metadata of disks
+KERNEL=="hd*[0-9]", IMPORT{builtin}="blkid"
+
+# by-label/by-uuid links (filesystem metadata)
+ENV{ID_FS_USAGE}=="filesystem|other|crypto", ENV{ID_FS_UUID_ENC}=="?*", SYMLINK+="disk/by-uuid/$env{ID_FS_UUID_ENC}"
+ENV{ID_FS_USAGE}=="filesystem|other", ENV{ID_FS_LABEL_ENC}=="?*", SYMLINK+="disk/by-label/$env{ID_FS_LABEL_ENC}"
+
+# by-partlabel/by-partuuid links (partition metadata)
+ENV{ID_PART_ENTRY_UUID}=="?*", SYMLINK+="disk/by-partuuid/$env{ID_PART_ENTRY_UUID}"
+ENV{ID_PART_ENTRY_SCHEME}=="gpt", ENV{ID_PART_ENTRY_NAME}=="?*", SYMLINK+="disk/by-partlabel/$env{ID_PART_ENTRY_NAME}"
+
+LABEL="persistent_storage_end"

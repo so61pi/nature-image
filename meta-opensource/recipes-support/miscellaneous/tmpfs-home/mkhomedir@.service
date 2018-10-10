@@ -1,0 +1,8 @@
+[Unit]
+Description=Create home directory for %I
+DefaultDependencies=no
+After=home.mount
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sh -c "/usr/bin/mkdir -m 0750 /home/%i && /usr/bin/chown %i /home/%i"

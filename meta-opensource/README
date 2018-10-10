@@ -1,0 +1,6 @@
+This layer only works with the following settings
+
+    DISTRO_FEATURES must have "systemd pam usrmerge"
+    IMAGE_INSTALL must have "systemd libpam"
+    EXTRA_IMAGE_FEATURES must have "read-only-rootfs"
+    ROOT_HOME must be "/root"

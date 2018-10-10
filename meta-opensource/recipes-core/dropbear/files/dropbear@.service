@@ -1,0 +1,10 @@
+[Unit]
+Description=SSH Per-Connection Server
+After=syslog.target
+
+[Service]
+EnvironmentFile=-/etc/default/dropbear
+ExecStart=-/usr/sbin/dropbear -i
+ExecReload=/usr/bin/kill -HUP $MAINPID
+StandardInput=socket
+KillMode=process

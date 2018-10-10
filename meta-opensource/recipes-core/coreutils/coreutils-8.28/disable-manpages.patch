@@ -1,0 +1,10 @@
+diff --git a/Makefile.am b/Makefile.am
+index 1c58fa5..5ed5d50 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -211,5 +211,4 @@ AM_CPPFLAGS = -Ilib -I$(top_srcdir)/lib -Isrc -I$(top_srcdir)/src
+ include $(top_srcdir)/lib/local.mk
+ include $(top_srcdir)/src/local.mk
+ include $(top_srcdir)/doc/local.mk
+-include $(top_srcdir)/man/local.mk
+ include $(top_srcdir)/tests/local.mk

@@ -1,0 +1,69 @@
+MAIL_DIR                    /var/mail
+
+#
+# Enable display of unknown usernames when login failures are recorded.
+#
+LOG_UNKFAIL_ENAB            no
+
+#
+# Enable logging of successful logins
+#
+LOG_OK_LOGINS               no
+
+#
+# Enable "syslog" logging of su activity - in addition to sulog file logging.
+# SYSLOG_SG_ENAB does the same for newgrp and sg.
+#
+SYSLOG_SU_ENAB              yes
+SYSLOG_SG_ENAB              yes
+
+SU_NAME                     su
+
+ENV_SUPATH                  PATH=/usr/sbin:/usr/bin:/sbin:/bin
+ENV_PATH                    PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+TTYGROUP                    tty
+TTYPERM                     0600
+
+#
+# Password aging controls:
+#
+PASS_MAX_DAYS               99999
+PASS_MIN_DAYS               0
+PASS_WARN_AGE               7
+
+#
+# Min/max values for automatic uid selection in useradd
+#
+UID_MIN                     1000
+UID_MAX                     60000
+SYS_UID_MIN                 100
+SYS_UID_MAX                 999
+
+#
+# Min/max values for automatic gid selection in groupadd
+#
+GID_MIN                     1000
+GID_MAX                     60000
+SYS_GID_MIN                 100
+SYS_GID_MAX                 999
+
+LOGIN_RETRIES       3
+LOGIN_TIMEOUT       30
+
+#
+# Should login be allowed if we can't cd to the home directory?
+#
+DEFAULT_HOME    yes
+
+#
+# If set to MD5 , MD5-based algorithm will be used for encrypting password
+# If set to SHA256, SHA256-based algorithm will be used for encrypting password
+# If set to SHA512, SHA512-based algorithm will be used for encrypting password
+# If set to DES, DES-based algorithm will be used for encrypting password (default)
+# Overrides the MD5_CRYPT_ENAB option
+#
+# Note: It is recommended to use a value consistent with
+# the PAM modules configuration.
+#
+ENCRYPT_METHOD SHA512

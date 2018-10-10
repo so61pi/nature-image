@@ -1,0 +1,11 @@
+- _append, _prepend should be preferred to +=, =+, ...
+- Strings after _append, _prepend must have
+  both a leading and a trailing space unless
+  there are reasons for not to.
+- Strings after +=, =+, ... should also have
+  both a leading and a trailing space unless
+  there are reasons for not to.
+
+For example
+    RDEPENDS_${PN}_append = " util-linux-agetty "
+    RDEPENDS_${PN} += " util-linux-login "

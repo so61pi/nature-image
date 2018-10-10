@@ -1,6 +1,9 @@
-[submodule "meta-oe-core"]
-	path = meta-oe-core
-	url = https://bitbucket.org/nature-linux/meta-oe-core.git
-[submodule "meta-opensource"]
-	path = meta-opensource
-	url = https://bitbucket.org/nature-linux/meta-opensource.git
+[submodule "meta-oe-core/bitbake"]
+	path = meta-oe-core/bitbake
+	url = https://github.com/openembedded/bitbake.git
+[submodule "meta-oe-core/openembedded-core"]
+	path = meta-oe-core/openembedded-core
+	url = https://github.com/openembedded/openembedded-core.git
+[submodule "meta-oe-core/meta-openembedded"]
+	path = meta-oe-core/meta-openembedded
+	url = https://github.com/openembedded/meta-openembedded.git

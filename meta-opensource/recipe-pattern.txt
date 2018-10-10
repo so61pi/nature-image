@@ -1,0 +1,114 @@
+#======================================#
+#           SUMMARY/LICENCE            #
+#--------------------------------------#
+
+
+#======================================#
+#           REQUIRE/INHERIT            #
+#--------------------------------------#
+
+# require and inherit statements should be
+# placed here.
+#
+# Note: Be careful about variable assignment
+# in the required and inherited files, the
+# assignments in this file may accidentally
+# override the ones in there which could
+# lead to unexpected result.
+
+
+#======================================#
+#                SOURCE                #
+#--------------------------------------#
+
+# All SRC_URI and related things (S, B, ...)
+# should be here.
+# 
+# - The main SRC_URI tarball file must have
+# the name "source".
+# - The only variable we should use in the
+# SRC_URI is ${PV}
+# 
+# For example
+#     SRC_URI = "https://git.kernel.org/pub/scm/utils/dash/dash.git/snapshot/dash-${PV}.tar.gz;name=source"
+
+
+#======================================#
+#           DEPENDS/PROVIDES           #
+#--------------------------------------#
+
+# Build time and runtime dependencies/aliases.
+# They should be placed in the following order
+# - Build time native tools dependencies
+# - Build time host libs/tools dependencies
+# - Runtime dependencies
+# - Build time aliases
+# - Runtime aliases
+# 
+# For example
+#     DEPENDS = " gettext-native "
+#     DEPENDS_append = " virtual/gettext "
+# 
+#     RDEPENDS_${PN} = " dash "
+# 
+#     PROVIDES = " tool "
+#     RPROVIDES_${PN} = " rtool "
+# 
+# Note: When you have more than one package
+# that have RDEPENDS (or RPROVIDES), you
+# should put them in PACKAGES/FILES section.
+
+
+#======================================#
+#         BUILD CONFIGURATIONS         #
+#--------------------------------------#
+
+# Mostly configuring variables for building,
+# such as EXTRA_OEMAKE, EXTRA_OECONF, ...
+
+
+#======================================#
+#                TASKS                 #
+#--------------------------------------#
+
+# Place for do_configure, do_compile,
+# do_install_append, ...
+
+
+#======================================#
+#            PACKAGES/FILES            #
+#--------------------------------------#
+
+# This is where you set PACKAGES and FILES
+# variables. Optionally, you can also have
+# RDEPENDS (or RPROVIDES) here.
+
+
+#======================================#
+#            INSTALL SCRIPT            #
+#--------------------------------------#
+
+# Pre/Post installation scripts.
+
+
+#======================================#
+#             ALTERNATIVES             #
+#--------------------------------------#
+
+# "inherit update-alternatives" and its stuff
+# should be here.
+
+
+#======================================#
+#           USERADD/SYSTEMD            #
+#--------------------------------------#
+
+# useradd creation and systemd services
+# installation stuff, in that order.
+
+
+#======================================#
+#                 TEST                 #
+#--------------------------------------#
+
+# ptest related tasks and things.
