@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ -z "$IMAGE" ]; then
+    echo "Usage:" >&2
+    echo "    IMAGE=xxx . $0 <image>" >&2
+    exit 1
+fi
+
+./buildall --setup --image="$IMAGE"
+
+# Setting correct OEROOT here to prevent oe-init-build-env from guessing the wrong one.
+OEROOT=$(./buildall --get=OEROOT) || exit 1
+BDIR=$(./buildall --get=BDIR --image="$IMAGE") || exit 1
+OEINIT=$(./buildall --get=OEINIT) || exit 1
+. "$OEINIT"
