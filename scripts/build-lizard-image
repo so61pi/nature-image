@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./buildall --image=lizard-image

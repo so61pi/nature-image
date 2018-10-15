@@ -1,4 +1,4 @@
-IMAGETAG		:= naturelinux/nature-image-builder
+IMAGETAG		:= naturelinux/nature-image-builder-$(shell id -u)-$(shell id -g)
 IMAGEBASETAG	:= naturelinux/nature-image-builder-base
 IMGVERSION		:= 1.0
 
@@ -9,7 +9,7 @@ all: docker-run
 
 .PHONY: docker-imgbase-build
 docker-imgbase-build:
-	docker build --rm=true --file Dockerfile-base -t "$(IMAGEBASETAG):$(IMGVERSION)" .
+	docker build --rm=true --file scripts/docker/Dockerfile-base -t "$(IMAGEBASETAG):$(IMGVERSION)" scripts/docker/
 
 
 .PHONY: docker-imgbase-push
@@ -25,7 +25,7 @@ docker-img-build:
 	--build-arg userid=$(shell id -u) \
 	--build-arg gitusername="$(shell git config user.name)" \
 	--build-arg gituseremail="$(shell git config user.email)" \
-	-t "$(IMAGETAG):$(IMGVERSION)" .
+	-t "$(IMAGETAG):$(IMGVERSION)" scripts/docker/
 
 
 .PHONY: docker-img-rm
@@ -35,16 +35,15 @@ docker-img-rm:
 
 .PHONY: docker-run
 docker-run:
-	docker run -it --rm --init --env-file Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
+	docker run --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
 
 
 .PHONY: docker-shell
 docker-shell:
-	docker run -it --rm --init --env-file Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)" fish
+	docker run -it --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)" fish
 
 
 # NOTE: The docker-clean is used to clean ALL the used containers and images in the system.
 .PHONY: docker-clean
 docker-clean:
-	docker image prune -f
-	docker container prune -f
+	docker system prune -f

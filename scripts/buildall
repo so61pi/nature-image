@@ -1,99 +1,212 @@
-#!/bin/sh
+#!/usr/bin/env python3
 
-# We do not want this
-# set -e
-
-# ASCII Font
-#   ANSI Shadow
-
-NATURE_LINUX_BUILD_STATUS=0
-
-
-if [ "$NATURE_LINUX_BUILD_EXCLUDE_CETACEAN_IMAGE" != "1" ]; then
-    (
-        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
-            echo '                                                                   '
-            echo ' ██████╗███████╗████████╗ █████╗  ██████╗███████╗ █████╗ ███╗   ██╗'
-            echo '██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║'
-            echo '██║     █████╗     ██║   ███████║██║     █████╗  ███████║██╔██╗ ██║'
-            echo '██║     ██╔══╝     ██║   ██╔══██║██║     ██╔══╝  ██╔══██║██║╚██╗██║'
-            echo '╚██████╗███████╗   ██║   ██║  ██║╚██████╗███████╗██║  ██║██║ ╚████║'
-            echo ' ╚═════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝'
-            echo '-------------------------------------------------------------------'
-        fi
-
-        IMAGE=cetacean-image . ./setup
-        bitbake cetacean-firmware
-    )
-    if [ $? -ne 0 ]; then
-        NATURE_LINUX_BUILD_STATUS=1
-    fi
-fi
+from collections import namedtuple
+from collections import OrderedDict
+import argparse
+import datetime
+import fileinput
+import git
+import os
+import shutil
+import subprocess
+import sys
 
 
-if [ "$NATURE_LINUX_BUILD_EXCLUDE_RODENT_IMAGE" != "1" ]; then
-    (
-        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
-            echo '                                                    '
-            echo '██████╗  ██████╗ ██████╗ ███████╗███╗   ██╗████████╗'
-            echo '██╔══██╗██╔═══██╗██╔══██╗██╔════╝████╗  ██║╚══██╔══╝'
-            echo '██████╔╝██║   ██║██║  ██║█████╗  ██╔██╗ ██║   ██║   '
-            echo '██╔══██╗██║   ██║██║  ██║██╔══╝  ██║╚██╗██║   ██║   '
-            echo '██║  ██║╚██████╔╝██████╔╝███████╗██║ ╚████║   ██║   '
-            echo '╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   '
-            echo '----------------------------------------------------'
-        fi
+ImageBuildInfo = namedtuple('ImageBuildInfo', 'image buildtarget artifacts decorator')
 
-        IMAGE=rodent-image . ./setup
-        bitbake rodent-flasher-image
-    )
-    if [ $? -ne 0 ]; then
-        NATURE_LINUX_BUILD_STATUS=1
-    fi
-fi
+image_build_info_dict = OrderedDict()
+image_build_info_dict['cetacean-image'] = \
+ImageBuildInfo(image='cetacean-image', buildtarget=['cetacean-firmware'],
+               artifacts=[os.path.join('build','build-cetacean-image','tmp','deploy','images','qemux86-64','cetacean-firmware-qemux86-64.swu'),
+                          os.path.join('build','build-cetacean-image','tmp','deploy','images','qemux86-64','cetacean-image-qemux86-64.wic.vdi')],
+               decorator='                                                                   \n'
+                         ' ██████╗███████╗████████╗ █████╗  ██████╗███████╗ █████╗ ███╗   ██╗\n'
+                         '██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║\n'
+                         '██║     █████╗     ██║   ███████║██║     █████╗  ███████║██╔██╗ ██║\n'
+                         '██║     ██╔══╝     ██║   ██╔══██║██║     ██╔══╝  ██╔══██║██║╚██╗██║\n'
+                         '╚██████╗███████╗   ██║   ██║  ██║╚██████╗███████╗██║  ██║██║ ╚████║\n'
+                         ' ╚═════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝\n'
+                         '-------------------------------------------------------------------\n'
+                         'cetaceancetaceancetaceancetaceancetaceancetaceancetaceancetaceancet\n'
+                         '-------------------------------------------------------------------\n')
+
+image_build_info_dict['rodent-image'] = \
+ImageBuildInfo(image='rodent-image', buildtarget=['rodent-flasher-image'],
+               artifacts=[os.path.join('build', 'build-rodent-image', 'tmp', 'deploy', 'images', 'beaglebone', 'rodent-firmware-beaglebone.swu'),
+                          os.path.join('build', 'build-rodent-image', 'tmp', 'deploy', 'images', 'beaglebone', 'flasher', 'rodent-flasher-image-beaglebone.wic')],
+               decorator='                                                    \n'
+                         '██████╗  ██████╗ ██████╗ ███████╗███╗   ██╗████████╗\n'
+                         '██╔══██╗██╔═══██╗██╔══██╗██╔════╝████╗  ██║╚══██╔══╝\n'
+                         '██████╔╝██║   ██║██║  ██║█████╗  ██╔██╗ ██║   ██║   \n'
+                         '██╔══██╗██║   ██║██║  ██║██╔══╝  ██║╚██╗██║   ██║   \n'
+                         '██║  ██║╚██████╔╝██████╔╝███████╗██║ ╚████║   ██║   \n'
+                         '╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   \n'
+                         '----------------------------------------------------\n'
+                         'rodentrodentrodentrodentrodentrodentrodentrodentrode\n'
+                         '----------------------------------------------------\n')
+
+image_build_info_dict['lizard-image'] = \
+ImageBuildInfo(image='lizard-image', buildtarget=['lizard-firmware'],
+               artifacts=[os.path.join('build', 'build-lizard-image', 'tmp', 'deploy', 'images', 'cubieboard2', 'lizard-firmware-cubieboard2.swu'),
+                          os.path.join('build', 'build-lizard-image', 'tmp', 'deploy', 'images', 'cubieboard2', 'lizard-image-cubieboard2.wic')],
+               decorator='                                           \n'
+                         '██╗     ██╗███████╗ █████╗ ██████╗ ██████╗ \n'
+                         '██║     ██║╚══███╔╝██╔══██╗██╔══██╗██╔══██╗\n'
+                         '██║     ██║  ███╔╝ ███████║██████╔╝██║  ██║\n'
+                         '██║     ██║ ███╔╝  ██╔══██║██╔══██╗██║  ██║\n'
+                         '███████╗██║███████╗██║  ██║██║  ██║██████╔╝\n'
+                         '╚══════╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ \n'
+                         '-------------------------------------------\n'
+                         'lizardlizardlizardlizardlizardlizardlizardl\n'
+                         '-------------------------------------------\n')
+
+image_build_info_dict['mushroom-image'] = \
+ImageBuildInfo(image='mushroom-image', buildtarget=['mushroom-firmware'],
+               artifacts=[os.path.join('build', 'build-mushroom-image', 'tmp', 'deploy', 'images', 'raspberrypi3', 'mushroom-firmware-raspberrypi3.swu'),
+                          os.path.join('build', 'build-mushroom-image', 'tmp', 'deploy', 'images', 'raspberrypi3', 'mushroom-image-raspberrypi3.wic')],
+               decorator='                                                                         \n'
+                         '███╗   ███╗██╗   ██╗███████╗██╗  ██╗██████╗  ██████╗  ██████╗ ███╗   ███╗\n'
+                         '████╗ ████║██║   ██║██╔════╝██║  ██║██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║\n'
+                         '██╔████╔██║██║   ██║███████╗███████║██████╔╝██║   ██║██║   ██║██╔████╔██║\n'
+                         '██║╚██╔╝██║██║   ██║╚════██║██╔══██║██╔══██╗██║   ██║██║   ██║██║╚██╔╝██║\n'
+                         '██║ ╚═╝ ██║╚██████╔╝███████║██║  ██║██║  ██║╚██████╔╝╚██████╔╝██║ ╚═╝ ██║\n'
+                         '╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝\n'
+                         '-------------------------------------------------------------------------\n'
+                         'mushroommushroommushroommushroommushroommushroommushroommushroommushroomm\n'
+                         '-------------------------------------------------------------------------\n')
 
 
-if [ "$NATURE_LINUX_BUILD_EXCLUDE_LIZARD_IMAGE" != "1" ]; then
-    (
-        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
-            echo '                                           '
-            echo '██╗     ██╗███████╗ █████╗ ██████╗ ██████╗ '
-            echo '██║     ██║╚══███╔╝██╔══██╗██╔══██╗██╔══██╗'
-            echo '██║     ██║  ███╔╝ ███████║██████╔╝██║  ██║'
-            echo '██║     ██║ ███╔╝  ██╔══██║██╔══██╗██║  ██║'
-            echo '███████╗██║███████╗██║  ██║██║  ██║██████╔╝'
-            echo '╚══════╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ '
-            echo '-------------------------------------------'
-        fi
-
-        IMAGE=lizard-image . ./setup
-        bitbake lizard-firmware
-    )
-    if [ $? -ne 0 ]; then
-        NATURE_LINUX_BUILD_STATUS=1
-    fi
-fi
+def get_prjroot():
+    return git.Repo(os.path.realpath(__file__), search_parent_directories=True).git.rev_parse("--show-toplevel")
 
 
-if [ "$NATURE_LINUX_BUILD_EXCLUDE_MUSHROOM_IMAGE" != "1" ]; then
-    (
-        if [ "$NATURE_LINUX_BUILD_BORING" != "1" ]; then
-            echo '                                                                         '
-            echo '███╗   ███╗██╗   ██╗███████╗██╗  ██╗██████╗  ██████╗  ██████╗ ███╗   ███╗'
-            echo '████╗ ████║██║   ██║██╔════╝██║  ██║██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║'
-            echo '██╔████╔██║██║   ██║███████╗███████║██████╔╝██║   ██║██║   ██║██╔████╔██║'
-            echo '██║╚██╔╝██║██║   ██║╚════██║██╔══██║██╔══██╗██║   ██║██║   ██║██║╚██╔╝██║'
-            echo '██║ ╚═╝ ██║╚██████╔╝███████║██║  ██║██║  ██║╚██████╔╝╚██████╔╝██║ ╚═╝ ██║'
-            echo '╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝'
-            echo '-------------------------------------------------------------------------'
-        fi
+def get_OEROOT(prjroot):
+    return os.path.join(prjroot, 'meta-oe-core', 'openembedded-core')
 
-        IMAGE=mushroom-image . ./setup
-        bitbake mushroom-firmware
-    )
-    if [ $? -ne 0 ]; then
-        NATURE_LINUX_BUILD_STATUS=1
-    fi
-fi
 
-exit $NATURE_LINUX_BUILD_STATUS
+def get_BDIR(prjroot, image):
+    return os.path.join(prjroot, 'build', 'build-{}'.format(image))
+
+
+def get_OEINIT(prjroot):
+    return os.path.join(prjroot, 'meta-oe-core', 'openembedded-core', 'oe-init-build-env')
+
+
+def setup_build(prjroot, image_build_info):
+    # build/build-xxx-image/
+    # conf/
+    # meta-image/meta-xxx-image/imgconf/
+    imgbuilddir = os.path.join(prjroot, 'build', 'build-{}'.format(image_build_info.image))
+    cfgdir = os.path.join(prjroot, 'conf')
+    imgcfgdir = os.path.join(prjroot, 'meta-image', 'meta-{}'.format(image_build_info.image), 'imgconf')
+
+    # build/build-xxx-image/conf/
+    os.makedirs(os.path.join(imgbuilddir, 'conf'), mode=0o755, exist_ok=True)
+
+    # build/build-xxx-image/conf/bblayers.conf = conf/common.bblayers.conf + meta-image/meta-xxx-image/imgconf/bblayers.conf
+    with open(os.path.join(imgbuilddir, 'conf', 'bblayers.conf'), 'w+') as fout, \
+         fileinput.input([os.path.join(cfgdir, 'common.bblayers.conf'), os.path.join(imgcfgdir, 'bblayers.conf')]) as fin:
+        for line in fin:
+            fout.write(line)
+
+    # build/build-xxx-image/conf/local.conf = conf/common.local.conf + meta-image/meta-xxx-image/imgconf/local.conf
+    with open(os.path.join(imgbuilddir, 'conf', 'local.conf'), 'w+') as fout, \
+         fileinput.input([os.path.join(cfgdir, 'common.local.conf'), os.path.join(imgcfgdir, 'local.conf')]) as fin:
+        for line in fin:
+            fout.write(line)
+
+    # build/build-xxx-image/conf/templateconf.cfg
+    open(os.path.join(imgbuilddir, 'conf', 'templateconf.cfg'), 'a').close()
+
+    # meta-oe-core/openembedded-core/bitbake -> meta-oe-core/bitbake
+    subprocess.run(['ln', '-sfr', '--no-dereference', os.path.join(prjroot, 'meta-oe-core', 'bitbake'), os.path.join(prjroot, 'meta-oe-core', 'openembedded-core', 'bitbake')], check=True)
+
+
+def build_image(prjroot, image_build_info):
+    cmd = '. {} && bitbake {}'.format(os.path.join(prjroot, 'meta-oe-core', 'openembedded-core', 'oe-init-build-env'),
+                                      ' '.join(image_build_info.buildtarget))
+    subprocess.run(cmd, check=True, shell=True, env=dict(os.environ, OEROOT=get_OEROOT(prjroot), BDIR=get_BDIR(prjroot, image_build_info.image)))
+
+
+def copy_artifacts(prjroot, image_build_info, artifacts_dir):
+    if not os.path.isdir(artifacts_dir):
+        raise ValueError('artifacts_dir must be a directory')
+
+    for file in image_build_info.artifacts:
+        shutil.copy2(os.path.join(prjroot, file), artifacts_dir)
+
+
+def prepare_artifacts_dir(prjroot):
+    timestamp = datetime.datetime.now().strftime('%F.%H-%M-%S')
+    ba = os.path.join(prjroot, 'build-artifacts')
+    new_artifacts_dir = os.path.join(ba, timestamp)
+    os.makedirs(new_artifacts_dir, mode=0o755, exist_ok=True)
+    subprocess.run(['ln', '-sfr', '--no-dereference', new_artifacts_dir, os.path.join(ba, '_latest')], check=True)
+    return new_artifacts_dir
+
+
+def buildall(prjroot, image_build_info_dict):
+    artifacts_dir = prepare_artifacts_dir(prjroot)
+    errors = []
+    for key, image_build_info in image_build_info_dict.items():
+        try:
+            print(image_build_info.decorator, flush=True)
+            setup_build(prjroot, image_build_info)
+            build_image(prjroot, image_build_info)
+            copy_artifacts(prjroot, image_build_info, artifacts_dir)
+        except Exception as e:
+            errors.append(e)
+    if errors:
+        raise Exception(errors)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image', help='specify image',
+                        action='append')
+    parser.add_argument('--setup', help='setup build',
+                        action='store_true')
+    parser.add_argument('--get', help='get OEROOT for BDIR')
+    args = parser.parse_args()
+
+    if args.image:
+        args.image = list(OrderedDict.fromkeys(args.image))
+
+    if args.get:
+        if args.get == 'OEROOT':
+            print(get_OEROOT(get_prjroot()))
+            sys.exit()
+        elif args.get == 'OEINIT':
+            print(get_OEINIT(get_prjroot()))
+            sys.exit()
+        elif args.get == 'BDIR':
+            if not args.image:
+                sys.exit('--get=BDIR must be used with --image')
+            if len(args.image) > 1:
+                sys.exit('--get=BDIR accepts only 1 image')
+            print(get_BDIR(get_prjroot(), args.image[0]))
+            sys.exit()
+        else:
+            sys.exit('invalid value for --get')
+
+    if args.setup:
+        if not args.image:
+            sys.exit('--setup must be used with --image')
+        setup_dict = OrderedDict()
+        for image in args.image:
+            if image not in image_build_info_dict:
+                sys.exit(image + ' is NOT a valid image')
+            setup_dict[image] = image_build_info_dict[image]
+        for key, image_build_info in setup_dict.items():
+            setup_build(get_prjroot(), image_build_info)
+        sys.exit()
+
+    if args.image:
+        build_dict = OrderedDict()
+        for image in args.image:
+            if image not in image_build_info_dict:
+                sys.exit(image + ' is NOT a valid image')
+            build_dict[image] = image_build_info_dict[image]
+        buildall(get_prjroot(), build_dict)
+    else:
+        buildall(get_prjroot(), image_build_info_dict)

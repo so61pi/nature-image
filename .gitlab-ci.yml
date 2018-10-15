@@ -1,0 +1,25 @@
+image: docker:stable
+
+variables:
+  DOCKER_DRIVER: overlay2
+  GIT_SUBMODULE_STRATEGY: recursive
+
+services:
+  - docker:dind
+
+build:
+  stage: build
+  cache:
+    paths:
+      - build/downloads/
+      - build/sstate-cache/
+  tags:
+    - docker
+  script:
+    - apk add make git
+    - git config --system user.name builder
+    - git config --system user.email builder@runner$CI_RUNNER_ID
+    - addgroup builder
+    - adduser -D -s /bin/sh -G builder builder
+    - su builder -c 'make docker-img-build'
+    - su builder -c make
