@@ -14,7 +14,7 @@ This repo contains the yocto recipes to build several Linux images for embedded 
 There are 2 ways to build the images:
 
 - Build with docker (recommended).
-    - You have to create the docker image first by running `make docker-build`.
+    - You have to create the docker image first by running `make docker-img-build`.
 - Or build directly on your system without docker.
 
 You can also build all the images together or seperately.
@@ -52,50 +52,23 @@ make docker-shell
 cd scripts
 ```
 
-#### 2. Setup build env
-
-```shell
-IMAGE=<image-name> . ./setup
-
-# Example:
-# IMAGE=cetacean-image . ./setup
-```
-
-#### 3. Building
+#### 2. Building
 
 - Build firmware
 
 ```shell
-bitbake <firmware-name>
+./build-<image-name>
 
 # Example:
-# bitbake cetacean-firmware
-```
-
-- Build wic
-
-```shell
-bitbake <image-name>
-
-# Example:
-# bitbake mushroom-image
-```
-
-- Build init flasher
-
-```shell
-bitbake <init-flasher-name>
-
-# Example:
-# bitbake rodent-flasher-image
+# ./build-cetacean-image
 ```
 
 ## How to use
 
-- The output of the build process (firmware, wic...) is at `build/build-<image-name>/tmp/deploy/images/<machine>/` (like `build/build-mushroom-image/tmp/deploy/images/raspberrypi3/`).
+- The output of the build process (firmware, wic...) is at `build-artifacts/_latest/`.
 - For cetacean image
     - You could use VirtualBox or VMWare to create a machine and point the disk to `cetacean-image-qemux86-64.wic.vdi`.
-    - Note that cetacean uses GPT, please configurate your virtual machine accordingly.
+    - Note that cetacean uses GPT, please configure your virtual machine accordingly.
 - For other images
     - Copy the wic file to micro SD.
     - Example for mushroom image `dd if=mushroom-image-raspberrypi3.wic of=/dev/<your-sd-dev> status=progress`
@@ -104,4 +77,11 @@ bitbake <init-flasher-name>
 
 ```shell
 swupdate-net <url-to-swu>
+
+# Example:
+# If we already have
+# - an http server at build-artifacts/_latest
+# - a VM instance runs cetacean image
+# then we could upgrade the firmware by running
+#   swupdate-net http://192.168.1.1/cetacean-firmware-qemux86-64.swu
 ```
