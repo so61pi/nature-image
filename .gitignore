@@ -7,3 +7,5 @@ meta-private/meta
 
 CMakeLists.txt.user
 *.py[co]
+
+Dockerenv.list
