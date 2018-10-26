@@ -17,8 +17,13 @@ docker-imgbase-push:
 	docker push "$(IMAGEBASETAG):$(IMGVERSION)"
 
 
+.PHONY: docker-env
+docker-env:
+	[ -e scripts/docker/Dockerenv.list ] || cp scripts/docker/Dockerenv.list.template scripts/docker/Dockerenv.list
+
+
 .PHONY: docker-img-build
-docker-img-build:
+docker-img-build: docker-env
 	docker build --rm=true \
 	--build-arg imgbase="$(IMAGEBASETAG):$(IMGVERSION)" \
 	--build-arg groupid=$(shell id -g) \
@@ -34,12 +39,12 @@ docker-img-rm:
 
 
 .PHONY: docker-run
-docker-run:
+docker-run: docker-env
 	docker run --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
 
 
 .PHONY: docker-shell
-docker-shell:
+docker-shell: docker-env
 	docker run -it --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)" fish
 
 
