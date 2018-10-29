@@ -19,9 +19,6 @@ inherit image
 #======================================#
 #           DEPENDS/PROVIDES           #
 #--------------------------------------#
-# Do not put bzImage in the final image (look in kernel.bbclass).
-# (Note: This is already set in qemu.inc)
-RDEPENDS_kernel-base = ""
 
 
 #======================================#

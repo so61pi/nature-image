@@ -30,7 +30,9 @@ inherit autotools texinfo pkgconfig
 #======================================#
 #                SOURCE                #
 #--------------------------------------#
-SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/people/tytso/e2fsprogs/v${PV}/e2fsprogs-${PV}.tar.xz;name=source"
+SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/people/tytso/e2fsprogs/v${PV}/e2fsprogs-${PV}.tar.xz;name=source    \
+           file://0001-rename-copy_file_range-to-copy_file_chunk.patch                                          \
+           "
 
 SRC_URI[source.md5sum] = "543bf56513092e06daaae4ead609b338"
 SRC_URI[source.sha256sum] = "2a6367289047d68d9ba6a46cf89ab9a1efd0556cde02a51ebaf414ff51edded9"

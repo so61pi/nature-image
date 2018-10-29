@@ -17,7 +17,10 @@ inherit meson split-completion qemu
 #======================================#
 #                SOURCE                #
 #--------------------------------------#
-SRC_URI = "https://github.com/systemd/systemd/archive/v${PV}.tar.gz;name=source"
+SRC_URI = "https://github.com/systemd/systemd/archive/v${PV}.tar.gz;name=source     \
+           file://0001-missing-system-calls.patch                                   \
+           file://0002-fix-efi-meson-build.patch                                    \
+           "
 
 SRC_URI[source.md5sum] = "d53a925f1ca5b2e124de0a8aa65d0db2"
 SRC_URI[source.sha256sum] = "25811f96f5a027bf2a4c9383495cf5b623e385d84da31e473cf375932b3e9c52"
@@ -181,51 +184,10 @@ EXTRA_OEMESON_append = "                    \
     -D install-tests=false                  \
     "
 
-MESON_LINK_ARGS = "${MESON_C_ARGS} ${TARGET_LDFLAGS}"
-
-TARGET_CC_ARCH_append = " ${TARGET_LDFLAGS} "
-
-C_COMPILER = "${HOST_PREFIX}gcc ${MESON_C_ARGS}"
-
 
 #======================================#
 #                TASKS                 #
 #--------------------------------------#
-do_write_config() {
-    # This needs to be Py to split the args into single-element lists
-    cat >${WORKDIR}/meson.cross <<EOF
-[binaries]
-c = [${@meson_array('C_COMPILER', d)}]
-cpp = '${HOST_PREFIX}g++'
-ar = '${HOST_PREFIX}ar'
-ld = '${HOST_PREFIX}ld'
-strip = '${HOST_PREFIX}strip'
-readelf = '${HOST_PREFIX}readelf'
-pkgconfig = 'pkg-config'
-
-[properties]
-needs_exe_wrapper = true
-c_args = [${@meson_array('MESON_C_ARGS', d)}]
-c_link_args = [${@meson_array('MESON_LINK_ARGS', d)}]
-cpp_args = [${@meson_array('MESON_C_ARGS', d)}]
-cpp_link_args = [${@meson_array('MESON_LINK_ARGS', d)}]
-
-[host_machine]
-system = '${HOST_OS}'
-cpu_family = '${HOST_ARCH}'
-cpu = '${HOST_ARCH}'
-endian = '${MESON_HOST_ENDIAN}'
-
-[target_machine]
-system = '${TARGET_OS}'
-cpu_family = '${TARGET_ARCH}'
-cpu = '${TARGET_ARCH}'
-endian = '${MESON_TARGET_ENDIAN}'
-EOF
-
-}
-
-
 do_install_append() {
     install -d ${D}${sysconfdir}
     ln -sr ${D}${libdir}/systemd/resolv.conf ${D}${sysconfdir}/resolv.conf
@@ -249,7 +211,6 @@ FILES_${PN} = "/"
 PACKAGE_WRITE_DEPS_append = " qemu-native "
 pkg_postinst_${PN} () {
     ${@qemu_run_binary(d, '$D', '${bindir}/udevadm')} hwdb --update --root $D
-    chown root:root $D${sysconfdir}/udev/hwdb.bin
 }
 
 
