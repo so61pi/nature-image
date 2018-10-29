@@ -1,9 +1,9 @@
 [submodule "meta-oe-core/bitbake"]
 	path = meta-oe-core/bitbake
-	url = https://github.com/openembedded/bitbake.git
+	url = https://gitlab.com/nature-linux/3rdparty/bitbake.git
 [submodule "meta-oe-core/openembedded-core"]
 	path = meta-oe-core/openembedded-core
-	url = https://github.com/openembedded/openembedded-core.git
+	url = https://gitlab.com/nature-linux/3rdparty/openembedded-core.git
 [submodule "meta-oe-core/meta-openembedded"]
 	path = meta-oe-core/meta-openembedded
-	url = https://github.com/openembedded/meta-openembedded.git
+	url = https://gitlab.com/nature-linux/3rdparty/meta-openembedded.git

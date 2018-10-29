@@ -30,7 +30,7 @@ SRC_URI[source.sha256sum] = "e92690620a4e4811c6b37b2f1b6c9b32a1dde40aa12be6527c8
 #           DEPENDS/PROVIDES           #
 #--------------------------------------#
 # Pull in the devicetree files into the rootfs
-RDEPENDS_kernel-base_append = " kernel-devicetree "
+RDEPENDS_${KERNEL_PACKAGE_NAME}-base_append = " ${KERNEL_PACKAGE_NAME}-devicetree "
 
 
 #======================================#

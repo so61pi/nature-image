@@ -48,6 +48,8 @@ IMAGE_INSTALL_append = " dropbear iputils vim-tiny tzdata   \
 
 IMAGE_INSTALL_append = " mount-data "
 
+IMAGE_INSTALL_append = " kernel-image-zimage "
+
 
 #======================================#
 #                TASKS                 #
