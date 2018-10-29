@@ -35,8 +35,8 @@ inherit autotools
 #--------------------------------------#
 SRC_URI = "http://www.greenwoodsoftware.com/less/less-${PV}.tar.gz;name=source"
 
-SRC_URI[source.md5sum] = "dcc8bf183a83b362d37fe9ef8df1fb60"
-SRC_URI[source.sha256sum] = "f3dc8455cb0b2b66e0c6b816c00197a71bf6d1787078adeee0bcf2aea4b12706"
+SRC_URI[source.md5sum] = "6a39bccf420c946b0fd7ffc64961315b"
+SRC_URI[source.sha256sum] = "503f91ab0af4846f34f0444ab71c4b286123f0044a4964f1ae781486c617f2e2"
 
 
 #======================================#
