@@ -53,7 +53,7 @@ PACKAGECONFIG[capabilities] = "--with-capabilities, --without-capabilities, libc
 
 EXTRA_OECONF = " --disable-asm "
 
-ARM_INSTRUCTION_SET = " arm "
+ARM_INSTRUCTION_SET = "arm"
 
 
 #======================================#
