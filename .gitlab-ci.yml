@@ -7,6 +7,19 @@ variables:
 services:
   - docker:dind
 
+stages:
+  - build
+  - deploy
+
+before_script:
+  - apk --no-cache add make git
+  - git config --system user.name builder
+  - git config --system user.email builder@runner$CI_RUNNER_ID
+  - addgroup builder
+  - adduser -D -s /bin/sh -G builder builder
+  - su builder -c 'make docker-imgbase-reload'
+  - su builder -c 'make docker-img-build'
+
 build:
   stage: build
   cache:
@@ -17,12 +30,20 @@ build:
   tags:
     - docker
   script:
-    - apk add make git
-    - git config --system user.name builder
-    - git config --system user.email builder@runner$CI_RUNNER_ID
-    - addgroup builder
-    - adduser -D -s /bin/sh -G builder builder
-    - su builder -c 'make docker-imgbase-reload'
-    - su builder -c 'make docker-img-build'
     - su builder -c 'make docker-env-from-env'
     - su builder -c 'make'
+
+pages:
+  stage: deploy
+  tags:
+    - docker
+  script:
+    - su builder -c 'make doc-html'
+    - mkdir public
+    - cp -a build/documents/html/ public/
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - public
+  only:
+    - master

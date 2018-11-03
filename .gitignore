@@ -10,3 +10,5 @@ CMakeLists.txt.user
 
 Dockerenv.list
 Dockerfile
+
+public/
