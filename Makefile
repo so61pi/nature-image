@@ -1,6 +1,6 @@
 IMAGETAG		:= naturelinux/nature-image-builder-$(shell id -u)-$(shell id -g)
 IMAGEBASETAG	:= naturelinux/nature-image-builder-base
-IMGVERSION		:= 1.1
+IMGVERSION		:= 1.2
 
 IMGCACHEPATH	:= build/docker-cache/nature-image-builder-base.tar
 
@@ -16,7 +16,7 @@ all: docker-env
 
 .PHONY: clean
 clean:
-	rm -rf build/build-*
+	rm -rf build/documents build/build-*
 
 
 .PHONY: build-cetacean-image
@@ -93,3 +93,8 @@ docker-img-rm:
 .PHONY: docker-clean
 docker-clean:
 	docker system prune -f
+
+
+.PHONY: doc-html
+doc-html:
+	docker run $(DOCKEROPTS) ./builddoc
