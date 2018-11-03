@@ -2,9 +2,47 @@ IMAGETAG		:= naturelinux/nature-image-builder-$(shell id -u)-$(shell id -g)
 IMAGEBASETAG	:= naturelinux/nature-image-builder-base
 IMGVERSION		:= 1.0
 
+DOCKEROPTS		:= --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
+
 
 .PHONY: all
-all: docker-run
+all: docker-env
+	docker run $(DOCKEROPTS)
+
+
+.PHONY: clean
+clean:
+	rm -rf build/build-*
+
+
+.PHONY: build-cetacean-image
+build-cetacean-image: docker-env
+	docker run $(DOCKEROPTS) ./build-cetacean-image
+
+
+.PHONY: build-rodent-image
+build-rodent-image: docker-env
+	docker run $(DOCKEROPTS) ./build-rodent-image
+
+
+.PHONY: build-lizard-image
+build-lizard-image: docker-env
+	docker run $(DOCKEROPTS) ./build-lizard-image
+
+
+.PHONY: build-mushroom-image
+build-mushroom-image: docker-env
+	docker run $(DOCKEROPTS) ./build-mushroom-image
+
+
+.PHONY: docker-env
+docker-env:
+	[ -e scripts/docker/Dockerenv.list ] || cp scripts/docker/Dockerenv.list.template scripts/docker/Dockerenv.list
+
+
+.PHONY: docker-shell
+docker-shell: docker-env
+	docker run -it $(DOCKEROPTS) fish
 
 
 .PHONY: docker-imgbase-build
@@ -17,13 +55,8 @@ docker-imgbase-push:
 	docker push "$(IMAGEBASETAG):$(IMGVERSION)"
 
 
-.PHONY: docker-env
-docker-env:
-	[ -e scripts/docker/Dockerenv.list ] || cp scripts/docker/Dockerenv.list.template scripts/docker/Dockerenv.list
-
-
 .PHONY: docker-img-build
-docker-img-build: docker-env
+docker-img-build:
 	docker build --rm=true \
 	--build-arg imgbase="$(IMAGEBASETAG):$(IMGVERSION)" \
 	--build-arg groupid=$(shell id -g) \
@@ -36,16 +69,6 @@ docker-img-build: docker-env
 .PHONY: docker-img-rm
 docker-img-rm:
 	docker image rm -f "$(IMAGETAG):$(IMGVERSION)"
-
-
-.PHONY: docker-run
-docker-run: docker-env
-	docker run --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
-
-
-.PHONY: docker-shell
-docker-shell: docker-env
-	docker run -it --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)" fish
 
 
 # NOTE: The docker-clean is used to clean ALL the used containers and images in the system.
