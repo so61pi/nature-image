@@ -1,8 +1,12 @@
 IMAGETAG		:= naturelinux/nature-image-builder-$(shell id -u)-$(shell id -g)
 IMAGEBASETAG	:= naturelinux/nature-image-builder-base
-IMGVERSION		:= 1.0
+IMGVERSION		:= 1.1
 
-DOCKEROPTS		:= --rm --init --env-file scripts/docker/Dockerenv.list -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
+IMGCACHEPATH	:= build/docker-cache/nature-image-builder-base.tar
+
+DOCKEROPTS		:= --rm --init --hostname localhost --env-file scripts/docker/Dockerenv.list
+DOCKEROPTS		+= -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
+DOCKERENVS		:= BB_ENV_EXTRAWHITE INHERIT SSTATE_MIRRORS SOURCE_MIRROR_URL BB_GENERATE_MIRROR_TARBALLS
 
 
 .PHONY: all
@@ -40,9 +44,14 @@ docker-env:
 	[ -e scripts/docker/Dockerenv.list ] || cp scripts/docker/Dockerenv.list.template scripts/docker/Dockerenv.list
 
 
+.PHONY: docker-env-from-env
+docker-env-from-env: docker-env
+	$(foreach ev,$(DOCKERENVS),if [ -n "$$$(ev)" ]; then echo "$(ev)=$$$(ev)" >> scripts/docker/Dockerenv.list; fi;)
+
+
 .PHONY: docker-shell
 docker-shell: docker-env
-	docker run -it $(DOCKEROPTS) fish
+	docker run -it $(DOCKEROPTS) bash
 
 
 .PHONY: docker-imgbase-build
@@ -55,8 +64,17 @@ docker-imgbase-push:
 	docker push "$(IMAGEBASETAG):$(IMGVERSION)"
 
 
+.PHONY: docker-imgbase-reload
+docker-imgbase-reload:
+	if [ -e "$(IMGCACHEPATH)" ]; then docker load -i "$(IMGCACHEPATH)"; fi
+	docker pull "$(IMAGEBASETAG):$(IMGVERSION)"
+	mkdir -p "$(shell dirname $(IMGCACHEPATH))"
+	docker save -o "$(IMGCACHEPATH)" "$(IMAGEBASETAG):$(IMGVERSION)"
+
+
 .PHONY: docker-img-build
 docker-img-build:
+	[ -e scripts/docker/Dockerfile ] || cp scripts/docker/Dockerfile.template scripts/docker/Dockerfile
 	docker build --rm=true \
 	--build-arg imgbase="$(IMAGEBASETAG):$(IMGVERSION)" \
 	--build-arg groupid=$(shell id -g) \
