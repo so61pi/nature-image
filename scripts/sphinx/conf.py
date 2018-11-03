@@ -20,7 +20,9 @@ author = 'so61pi'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = git.Repo(os.path.realpath(__file__), search_parent_directories=True).active_branch.name
+# TODO: Detached HEAD leads to active_branch = None.
+# release = git.Repo(os.path.realpath(__file__), search_parent_directories=True).active_branch.name
+release = 'master'
 
 
 # -- General configuration ---------------------------------------------------
