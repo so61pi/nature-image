@@ -13,6 +13,7 @@ build:
     paths:
       - build/downloads/
       - build/sstate-cache/
+      - build/docker-cache/
   tags:
     - docker
   script:
@@ -21,5 +22,7 @@ build:
     - git config --system user.email builder@runner$CI_RUNNER_ID
     - addgroup builder
     - adduser -D -s /bin/sh -G builder builder
+    - su builder -c 'make docker-imgbase-reload'
     - su builder -c 'make docker-img-build'
-    - su builder -c make
+    - su builder -c 'make docker-env-from-env'
+    - su builder -c 'make'
