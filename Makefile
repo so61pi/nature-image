@@ -96,5 +96,5 @@ docker-clean:
 
 
 .PHONY: doc-html
-doc-html:
+doc-html: docker-env
 	docker run $(DOCKEROPTS) ./builddoc
