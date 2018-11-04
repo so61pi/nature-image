@@ -4,7 +4,13 @@ IMGVERSION		:= 1.2
 
 IMGCACHEPATH	:= build/docker-cache/nature-image-builder-base.tar
 
-DOCKEROPTS		:= -it --rm --init --hostname localhost --env-file scripts/docker/Dockerenv.list
+# We want to avoid "the input device is not a TTY" when building in
+# CI/CD, but still need an interactive shell when build locally.
+#
+# The mentioned error could be reproduced by removing the next line
+# and run "true | make".
+DOCKEROPTS		:= $(shell if [ -t 0 ]; then echo -it; fi)
+DOCKEROPTS		+= --rm --init --hostname localhost --env-file scripts/docker/Dockerenv.list
 DOCKEROPTS		+= -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
 DOCKERENVS		:= BB_ENV_EXTRAWHITE INHERIT SSTATE_MIRRORS SOURCE_MIRROR_URL BB_GENERATE_MIRROR_TARBALLS
 
