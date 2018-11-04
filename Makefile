@@ -4,7 +4,7 @@ IMGVERSION		:= 1.2
 
 IMGCACHEPATH	:= build/docker-cache/nature-image-builder-base.tar
 
-DOCKEROPTS		:= --rm --init --hostname localhost --env-file scripts/docker/Dockerenv.list
+DOCKEROPTS		:= -it --rm --init --hostname localhost --env-file scripts/docker/Dockerenv.list
 DOCKEROPTS		+= -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
 DOCKERENVS		:= BB_ENV_EXTRAWHITE INHERIT SSTATE_MIRRORS SOURCE_MIRROR_URL BB_GENERATE_MIRROR_TARBALLS
 
@@ -51,7 +51,7 @@ docker-env-from-env: docker-env
 
 .PHONY: docker-shell
 docker-shell: docker-env
-	docker run -it $(DOCKEROPTS) bash
+	docker run $(DOCKEROPTS) bash
 
 
 .PHONY: docker-imgbase-build
