@@ -23,12 +23,14 @@ before_script:
 build:
   stage: build
   cache:
+    key: ${CI_JOB_NAME}
     paths:
       - build/downloads/
       - build/sstate-cache/
       - build/docker-cache/
   tags:
     - docker
+    - nature-image-builder
   script:
     - su builder -c 'make docker-env-from-env'
     - su builder -c 'make'
@@ -36,6 +38,7 @@ build:
 pages:
   stage: deploy
   cache:
+    key: ${CI_JOB_NAME}
     paths:
       - build/docker-cache/
   tags:
