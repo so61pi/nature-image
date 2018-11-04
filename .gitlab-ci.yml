@@ -42,7 +42,6 @@ pages:
     - docker
   script:
     - su builder -c 'make doc-html'
-    - mkdir public
     - cp -a build/documents/html/ public/
   artifacts:
     expire_in: 1 day
