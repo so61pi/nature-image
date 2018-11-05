@@ -1,4 +1,4 @@
 #!/bin/sh
 
-PRJROOT=$(git rev-parse --show-toplevel)
+PRJROOT=$(./buildall --get=PRJROOT)
 sphinx-build -a -E -W -d "$PRJROOT/build/documents/.doctrees" -c sphinx "$PRJROOT" "$PRJROOT/build/documents/html"

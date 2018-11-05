@@ -5,7 +5,6 @@ from collections import OrderedDict
 import argparse
 import datetime
 import fileinput
-import git
 import os
 import shutil
 import subprocess
@@ -76,20 +75,22 @@ ImageBuildInfo(image='mushroom-image', buildtarget=['mushroom-firmware'],
                          '-------------------------------------------------------------------------\n')
 
 
-def get_prjroot():
-    return git.Repo(os.path.realpath(__file__), search_parent_directories=True).git.rev_parse("--show-toplevel")
+class Paths():
+    @staticmethod
+    def prjroot():
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+    @staticmethod
+    def OEROOT(prjroot):
+        return os.path.join(prjroot, 'meta-oe-core', 'openembedded-core')
 
-def get_OEROOT(prjroot):
-    return os.path.join(prjroot, 'meta-oe-core', 'openembedded-core')
+    @staticmethod
+    def BDIR(prjroot, image):
+        return os.path.join(prjroot, 'build', 'build-{}'.format(image))
 
-
-def get_BDIR(prjroot, image):
-    return os.path.join(prjroot, 'build', 'build-{}'.format(image))
-
-
-def get_OEINIT(prjroot):
-    return os.path.join(prjroot, 'meta-oe-core', 'openembedded-core', 'oe-init-build-env')
+    @staticmethod
+    def OEINIT(prjroot):
+        return os.path.join(prjroot, 'meta-oe-core', 'openembedded-core', 'oe-init-build-env')
 
 
 def setup_build(prjroot, image_build_info):
@@ -125,7 +126,7 @@ def setup_build(prjroot, image_build_info):
 def build_image(prjroot, image_build_info):
     cmd = '. {} && bitbake {}'.format(os.path.join(prjroot, 'meta-oe-core', 'openembedded-core', 'oe-init-build-env'),
                                       ' '.join(image_build_info.buildtarget))
-    subprocess.run(cmd, check=True, shell=True, env=dict(os.environ, OEROOT=get_OEROOT(prjroot), BDIR=get_BDIR(prjroot, image_build_info.image)))
+    subprocess.run(cmd, check=True, shell=True, env=dict(os.environ, OEROOT=Paths.OEROOT(prjroot), BDIR=Paths.BDIR(prjroot, image_build_info.image)))
 
 
 def copy_artifacts(prjroot, image_build_info, artifacts_dir):
@@ -166,25 +167,28 @@ if __name__ == '__main__':
                         action='append')
     parser.add_argument('--setup', help='setup build',
                         action='store_true')
-    parser.add_argument('--get', help='get OEROOT for BDIR')
+    parser.add_argument('--get', help='get PRJROOT, OEROOT, OEINIT or BDIR')
     args = parser.parse_args()
 
     if args.image:
         args.image = list(OrderedDict.fromkeys(args.image))
 
     if args.get:
-        if args.get == 'OEROOT':
-            print(get_OEROOT(get_prjroot()))
+        if args.get == 'PRJROOT':
+            print(Paths.prjroot())
+            sys.exit()
+        elif args.get == 'OEROOT':
+            print(Paths.OEROOT(Paths.prjroot()))
             sys.exit()
         elif args.get == 'OEINIT':
-            print(get_OEINIT(get_prjroot()))
+            print(Paths.OEINIT(Paths.prjroot()))
             sys.exit()
         elif args.get == 'BDIR':
             if not args.image:
                 sys.exit('--get=BDIR must be used with --image')
             if len(args.image) > 1:
                 sys.exit('--get=BDIR accepts only 1 image')
-            print(get_BDIR(get_prjroot(), args.image[0]))
+            print(Paths.BDIR(Paths.prjroot(), args.image[0]))
             sys.exit()
         else:
             sys.exit('invalid value for --get')
@@ -198,7 +202,7 @@ if __name__ == '__main__':
                 sys.exit(image + ' is NOT a valid image')
             setup_dict[image] = image_build_info_dict[image]
         for key, image_build_info in setup_dict.items():
-            setup_build(get_prjroot(), image_build_info)
+            setup_build(Paths.prjroot(), image_build_info)
         sys.exit()
 
     if args.image:
@@ -207,6 +211,6 @@ if __name__ == '__main__':
             if image not in image_build_info_dict:
                 sys.exit(image + ' is NOT a valid image')
             build_dict[image] = image_build_info_dict[image]
-        buildall(get_prjroot(), build_dict)
+        buildall(Paths.prjroot(), build_dict)
     else:
-        buildall(get_prjroot(), image_build_info_dict)
+        buildall(Paths.prjroot(), image_build_info_dict)
