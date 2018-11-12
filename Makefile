@@ -1,6 +1,6 @@
 IMAGETAG		:= naturelinux/nature-image-builder-$(shell id -u)-$(shell id -g)
 IMAGEBASETAG	:= naturelinux/nature-image-builder-base
-IMGVERSION		:= 1.2
+IMGVERSION		:= 1.3
 
 IMGCACHEPATH	:= build/docker-cache/nature-image-builder-base.tar
 
@@ -10,7 +10,7 @@ IMGCACHEPATH	:= build/docker-cache/nature-image-builder-base.tar
 # The mentioned error could be reproduced by removing the next line
 # and run "true | make".
 DOCKEROPTS		:= $(shell if [ -t 0 ]; then echo -it; fi)
-DOCKEROPTS		+= --rm --init --hostname localhost --env-file scripts/docker/Dockerenv.list
+DOCKEROPTS		+= --rm --init --privileged --hostname localhost --env-file scripts/docker/Dockerenv.list
 DOCKEROPTS		+= -v $(shell pwd):/code:rw "$(IMAGETAG):$(IMGVERSION)"
 DOCKERENVS		:= BB_ENV_EXTRAWHITE INHERIT SSTATE_MIRRORS SOURCE_MIRROR_URL BB_GENERATE_MIRROR_TARBALLS
 
@@ -55,6 +55,14 @@ build-lizard-image: docker-env
 .PHONY: build-mushroom-image
 build-mushroom-image: docker-env
 	docker run $(DOCKEROPTS) ./build-mushroom-image
+
+
+##
+#-------------------------------
+## tests-run                    : Run tests.
+.PHONY: tests-run
+tests-run: docker-env
+	docker run $(DOCKEROPTS) ./tests-run
 
 
 ##

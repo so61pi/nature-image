@@ -25,7 +25,7 @@ inherit image
 #         BUILD CONFIGURATIONS         #
 #--------------------------------------#
 IMAGE_LINGUAS = ""
-IMAGE_FSTYPES = " squashfs wic.vdi "
+IMAGE_FSTYPES = " squashfs wic.vdi wic.qcow2 "
 
 IMAGE_INSTALL        = " packagegroup-base-simple base-files dash glibc-utils coreutils e2fsprogs dosfstools dbus less "
 IMAGE_INSTALL_append = " systemd systemd-zsh-completion systemd-extra-files  "
