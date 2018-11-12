@@ -10,6 +10,8 @@ import shutil
 import subprocess
 import sys
 
+import util
+
 
 ImageBuildInfo = namedtuple('ImageBuildInfo', 'image buildtarget artifacts decorator')
 
@@ -17,7 +19,8 @@ image_build_info_dict = OrderedDict()
 image_build_info_dict['cetacean-image'] = \
 ImageBuildInfo(image='cetacean-image', buildtarget=['cetacean-firmware'],
                artifacts=[os.path.join('build','build-cetacean-image','tmp','deploy','images','qemux86-64','cetacean-firmware-qemux86-64.swu'),
-                          os.path.join('build','build-cetacean-image','tmp','deploy','images','qemux86-64','cetacean-image-qemux86-64.wic.vdi')],
+                          os.path.join('build','build-cetacean-image','tmp','deploy','images','qemux86-64','cetacean-image-qemux86-64.wic.vdi'),
+                          os.path.join('build','build-cetacean-image','tmp','deploy','images','qemux86-64','cetacean-image-qemux86-64.wic.qcow2')],
                decorator='                                                                   \n'
                          ' ██████╗███████╗████████╗ █████╗  ██████╗███████╗ █████╗ ███╗   ██╗\n'
                          '██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║\n'
@@ -76,10 +79,6 @@ ImageBuildInfo(image='mushroom-image', buildtarget=['mushroom-firmware'],
 
 
 class Paths():
-    @staticmethod
-    def prjroot():
-        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
     @staticmethod
     def OEROOT(prjroot):
         return os.path.join(prjroot, 'meta-oe-core', 'openembedded-core')
@@ -175,20 +174,20 @@ if __name__ == '__main__':
 
     if args.get:
         if args.get == 'PRJROOT':
-            print(Paths.prjroot())
+            print(util.prjroot())
             sys.exit()
         elif args.get == 'OEROOT':
-            print(Paths.OEROOT(Paths.prjroot()))
+            print(Paths.OEROOT(util.prjroot()))
             sys.exit()
         elif args.get == 'OEINIT':
-            print(Paths.OEINIT(Paths.prjroot()))
+            print(Paths.OEINIT(util.prjroot()))
             sys.exit()
         elif args.get == 'BDIR':
             if not args.image:
                 sys.exit('--get=BDIR must be used with --image')
             if len(args.image) > 1:
                 sys.exit('--get=BDIR accepts only 1 image')
-            print(Paths.BDIR(Paths.prjroot(), args.image[0]))
+            print(Paths.BDIR(util.prjroot(), args.image[0]))
             sys.exit()
         else:
             sys.exit('invalid value for --get')
@@ -202,7 +201,7 @@ if __name__ == '__main__':
                 sys.exit(image + ' is NOT a valid image')
             setup_dict[image] = image_build_info_dict[image]
         for key, image_build_info in setup_dict.items():
-            setup_build(Paths.prjroot(), image_build_info)
+            setup_build(util.prjroot(), image_build_info)
         sys.exit()
 
     if args.image:
@@ -211,6 +210,6 @@ if __name__ == '__main__':
             if image not in image_build_info_dict:
                 sys.exit(image + ' is NOT a valid image')
             build_dict[image] = image_build_info_dict[image]
-        buildall(Paths.prjroot(), build_dict)
+        buildall(util.prjroot(), build_dict)
     else:
-        buildall(Paths.prjroot(), image_build_info_dict)
+        buildall(util.prjroot(), image_build_info_dict)

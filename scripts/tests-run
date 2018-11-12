@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+import errno
+import os
+import pytest
+import subprocess
+import sys
+
+import util
+
+
+if __name__ == '__main__':
+    subprocess.call(['sudo', 'chown', ':{}'.format(os.getgid()), '/dev/kvm'])
+
+    reportdir = os.path.join(util.prjroot(), 'build-reports')
+    os.makedirs(reportdir, exist_ok=True)
+
+    testsdir = os.path.join(util.prjroot(), 'tests')
+    sys.path.append(testsdir)
+    pytest.main([testsdir, '-s',
+                 '--junitxml={}'.format(os.path.join(reportdir, 'report.xml')),
+                 '--html={}'.format(os.path.join(reportdir, 'report.html')),
+                 '--self-contained-html',
+
+                 '--x-platform-name=cetacean',
+
+                 '--x-sut-hostname=127.0.0.1',
+                 '--x-sut-sshport=50022',
+                 '--x-sut-username=root',
+                 '--x-sut-password=root',
+
+                 '--x-fwhost-on',
+                 '--x-fwhost-port=8000',
+                 '--x-fwhost-directory={}'.format(os.path.join(util.prjroot(), 'build-artifacts', '_latest')),
+
+                 '--x-fwlink=http://_gateway:8000/cetacean-firmware-qemux86-64.swu',
+
+                 '--x-server-ping=_gateway',
+
+                 '--x-qemu-on',
+                 '--x-qemu-diskpath={}'.format(os.path.join(util.prjroot(), 'build-artifacts', '_latest', 'cetacean-image-qemux86-64.wic.qcow2')),
+                 '--x-qemu-sshport=50022',
+                 '--x-qemu-ramsize=512M',
+                 ])
