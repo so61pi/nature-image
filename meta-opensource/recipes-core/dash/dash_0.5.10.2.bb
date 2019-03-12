@@ -19,8 +19,8 @@ inherit autotools
 #--------------------------------------#
 SRC_URI = "https://git.kernel.org/pub/scm/utils/dash/dash.git/snapshot/dash-${PV}.tar.gz;name=source"
 
-SRC_URI[source.md5sum] = "0d800da0b8ddbefa1468978d314b7d09"
-SRC_URI[source.sha256sum] = "3f747013a20a3a9d2932be1a6dd1b002ca5649849b649be0af8a8da80bd8a918"
+SRC_URI[source.md5sum] = "6da4e51e78de20c54310f42c85ec50bb"
+SRC_URI[source.sha256sum] = "c34e1259c4179a6551dc3ceb41c668cf3be0135c5ec430deb2edfc17fff44da9"
 
 
 #======================================#
